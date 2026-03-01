@@ -1,5 +1,6 @@
 package battle;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -19,6 +20,7 @@ public class Battle {
         this.battleOver = false;
         this.turnQueue = new LinkedList<>();
         this.waitQueue = new LinkedList<>();
+        initializeTurnOrder();
     }
 
     public void startBattle() {
@@ -40,7 +42,7 @@ public class Battle {
         waitQueue.clear();
         turnQueue.clear();
 
-        List<Unit> allUnits = new LinkedList<>();
+        List<Unit> allUnits = new ArrayList<>();
 
         for (Unit u : playerParty) {
             if (u.isAlive()) allUnits.add(u);
@@ -58,6 +60,42 @@ public class Battle {
 
         turnQueue.addAll(allUnits);
 
+    }
+
+    public Unit getCurrentUnit() {
+        if (turnQueue.isEmpty()) return null;
+        return turnQueue.peek();
+    }
+
+    public void executeAction(Action action) {
+        if (battleOver) return;
+
+        Unit current = turnQueue.poll();
+        if (current == null || !current.isAlive()) {
+            return;
+        }
+
+        switch (action) {
+            case ATTACK:
+                handleAttack(current);
+                break;
+            case DEFEND:
+                handleDefend(current);
+                break;
+            case WAIT:
+                break;
+            default:
+                break;
+        }
+
+        if (isBattleOver()) {
+            battleOver = true;
+            return;
+        }
+
+        if (current.isAlive()) {
+            turnQueue.offer(current);
+        }
     }
 
     private void processTurn(Unit unit) {
@@ -97,7 +135,7 @@ public class Battle {
             }
 
             if (target != null) {
-                handleAttack(unit, target);
+                handleAttack(unit);
             }
         }
 
@@ -107,12 +145,25 @@ public class Battle {
         }
     }
 
-    private void handleAttack(Unit attacker, Unit defender) {
-        int damage = attacker.getAttack() - defender.getDefense();
-        if (damage < 0) {
-            damage = 0;
+    private void handleAttack(Unit attacker) {
+        List<Unit> targetParty = enemyParty.contains(attacker)
+                ? playerParty
+                : enemyParty;
+
+        Unit target = null;
+        for (Unit u : targetParty) {
+            if (u.isAlive()) {
+                target = u;
+                break;
+            }
         }
-        defender.takeDamage(damage);
+
+        if (target == null) return;
+
+        int damage = attacker.getAttack() - target.getDefense();
+        if (damage < 0) damage = 0;
+
+        target.takeDamage(damage);
     }
 
     private void handleDefend(Unit unit) {
@@ -124,23 +175,28 @@ public class Battle {
 
     }
 
-    private boolean isBattleOver() {
-        boolean heroesAlive = false;
-        boolean enemiesAlive = false;
+    public boolean isBattleOver() {
+        return noLivingUnits(playerParty) || noLivingUnits(enemyParty);
+    }
 
-        for (Unit u : playerParty) {
-            if (u.isAlive()) {
-                heroesAlive = true;
-                break;
-            }
+    private boolean noLivingUnits(List<Unit> party) {
+        for (Unit u : party) {
+            if (u.isAlive()) return false;
         }
-        for (Unit u : enemyParty) {
-            if (u.isAlive()) {
-                enemiesAlive = true;
-                break;
-            }
-        }
-        return !heroesAlive || !enemiesAlive;
+        return true;
+    }
+
+    public String getWinner() {
+        if (!isBattleOver()) return null;
+
+        if (noLivingUnits(enemyParty)) return "Heroes";
+        if (noLivingUnits(playerParty)) return "Enemies";
+
+        return null;
+    }
+
+    public List<Unit> getTurnOrder() {
+        return new ArrayList<>(turnQueue);
     }
 
     private void endBattle() {
