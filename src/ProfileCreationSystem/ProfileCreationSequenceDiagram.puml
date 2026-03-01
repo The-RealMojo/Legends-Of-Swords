@@ -1,0 +1,46 @@
+@startuml
+title Use Case 1: Profile Creation and Login
+
+actor User
+participant LoginScreen
+participant AccountManager
+participant UserDB
+database Database
+
+== Register ==
+
+User -> LoginScreen : enter username & password
+User -> LoginScreen : click Register
+LoginScreen -> AccountManager : register(username, password)
+
+AccountManager -> UserDB  : check if username exists
+UserDB  -> Database : search username
+Database --> UserDB  : result
+UserDB  --> AccountManager : username found / not found
+
+alt Username not found
+    AccountManager -> UserDB  : save new user
+    UserDB  -> Database : insert new record
+    AccountManager --> LoginScreen : show success message
+else Username already exists
+    AccountManager --> LoginScreen : show error message
+end
+
+== Login ==
+
+User -> LoginScreen : enter username & password
+User -> LoginScreen : click Login
+LoginScreen -> AccountManager : login(username, password)
+
+AccountManager -> UserDB  : get user by username
+UserDB  -> Database : search user
+Database --> UserDB  : user record
+UserDB  --> AccountManager : user record
+
+alt Information is correct
+    AccountManager --> LoginScreen : login successful
+else Information is incorrect
+    AccountManager --> LoginScreen : show error message
+end
+
+@enduml
