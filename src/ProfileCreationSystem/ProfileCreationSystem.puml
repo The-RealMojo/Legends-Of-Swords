@@ -1,75 +1,67 @@
 @startuml
-
-skinparam packageStyle rect
-
-package "UI" {
-    class LoginGUI {
-        + displayLogin(): void
-        + displayRegistration(): void
-        + LoginSubmit(u: String, p: String): void
+package "UI Layer" {
+    class LoginScreen {
+        + onRegisterSubmit(username: String, password: String): void
+        + onLoginSubmit(username: String, password: String): void
+        + showMessage(message: String): void
     }
 
     class DashboardGUI {
-        + displayUserData(data: UserProfile): void
-        + ModeSelect(mode: String): void
+        + displaySavedData(profile: UserProfile): void
+        + selectGameMode(mode: String): void
     }
 }
 
-package "Profile Logic" {
-    class ProfileManager {
-        - currentUser: UserProfile
-        + createAccount(u: String, p: String): Boolean
-        + fetchSavedData(userId: String): UserProfile
-        + updateRankings(score: int): void
-    }
-
-    class AuthenticationManager {
-        + validateCredentials(u: String, p: String): Boolean
-        + hashPassword(p: String): String
+package "Logic Layer" {
+    class AccountManager {
+        + register(username: String, password: String): Boolean
+        + login(username: String, password: String): UserProfile
     }
 }
 
-package "Data" {
-    interface IUserRepository <<interface>> {
-        + save(u: UserProfile): void
-        + findByUsername(u: String): UserProfile
-    }
-
-    class SQLUserRepository {
-        - db: DatabaseConnector
-        + save(u: UserProfile): void
-        + findByUsername(u: String): UserProfile
-    }
-
-    class DatabaseConnector {
-        + executeQuery(sql: String): ResultSet
-        + openConnection(): void
-    }
-
+package "Data Layer" {
     class UserProfile {
         - userId: String
         - username: String
         - passwordHash: String
+        - scores: int
         - rankings: int
-        + getSavedParties(): List
+        - campaignProgress: int
+        + getSavedParties(): List<String>
     }
 
-    class UserData {
-        - campaignProgress: Object
-        - lastLogin: Date
+    interface IUserDB {
+        + usernameExists(username: String): Boolean
+        + save(user: UserProfile): void
+        + findUsername(username: String): UserProfile
+    }
+
+    class SQLUserRepository {
+        + usernameExists(username: String): Boolean
+        + save(user: UserProfile): void
+        + findUsername(username: String): UserProfile
+    }
+
+    interface IDBConnection {
+        + openConnection(): void
+        + executeQuery(sql: String): ResultSet
+    }
+
+    class DatabaseConnector {
+        + openConnection(): void
+        + executeQuery(sql: String): ResultSet
     }
 }
 
 ' Relationships
-LoginGUI ..> DashboardGUI : <<navigates>>
-LoginGUI ..> AuthenticationManager : <<use>>
-DashboardGUI ..> ProfileManager : <<use>>
+LoginScreen ..> AccountManager : uses
+AccountManager ..> IUserDB : uses
+IUserDB <|.. SQLUserRepository : implements
 
-ProfileManager ..> IUserRepository : <<use>>
+SQLUserRepository ..> IDBConnection : uses
+DatabaseConnector ..|> IDBConnection : implements
 
-IUserRepository <|.. SQLUserRepository : implements
-SQLUserRepository --> DatabaseConnector : uses raw connection
-
-UserProfile "1" *-- UserData : contains
+AccountManager ..> DashboardGUI : navigates to after login
+DashboardGUI ..> UserProfile : displays
 
 @enduml
