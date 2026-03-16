@@ -1,46 +1,65 @@
 @startuml
-title Use Case 1: Profile Creation and Login
-
+title Use Case 1 - Profile Creation and Login
 actor User
+
+participant ProfileCreationMain
 participant LoginScreen
 participant AccountManager
-participant UserDB
+participant SQLUserRepository
+participant DatabaseConnector
 database Database
+participant DashboardGUI
 
-== Register ==
+== System Startup ==
 
-User -> LoginScreen : enter username & password
-User -> LoginScreen : click Register
+ProfileCreationMain -> DatabaseConnector : getInstance()
+ProfileCreationMain -> DatabaseConnector : openConnection()
+
+ProfileCreationMain -> LoginScreen : create LoginScreen
+LoginScreen -> User : display login/register screen
+
+== Registration Flow ==
+
+User -> LoginScreen : enter username/password\nclick Register
 LoginScreen -> AccountManager : register(username, password)
 
-AccountManager -> UserDB  : check if username exists
-UserDB  -> Database : search username
-Database --> UserDB  : result
-UserDB  --> AccountManager : username found / not found
+AccountManager -> SQLUserRepository : usernameExists(username)
+SQLUserRepository -> DatabaseConnector : getConnection()
+DatabaseConnector -> Database : SELECT Users WHERE username=?
 
-alt Username not found
-    AccountManager -> UserDB  : save new user
-    UserDB  -> Database : insert new record
-    AccountManager --> LoginScreen : show success message
-else Username already exists
-    AccountManager --> LoginScreen : show error message
+Database --> SQLUserRepository : result
+
+alt username already exists
+    AccountManager -> LoginScreen : registration failed
+    LoginScreen -> User : show error message
+else username available
+    AccountManager -> SQLUserRepository : save(user)
+    SQLUserRepository -> DatabaseConnector : getConnection()
+    DatabaseConnector -> Database : INSERT new user
+    Database --> SQLUserRepository : success
+    AccountManager -> LoginScreen : registration success
+    LoginScreen -> User : show success message
 end
 
-== Login ==
+== Login Flow ==
 
-User -> LoginScreen : enter username & password
-User -> LoginScreen : click Login
-LoginScreen -> AccountManager : login(username, password)
+User -> LoginScreen : enter username/password\nclick Login
+LoginScreen -> AccountManager : login(username,password)
 
-AccountManager -> UserDB  : get user by username
-UserDB  -> Database : search user
-Database --> UserDB  : user record
-UserDB  --> AccountManager : user record
+AccountManager -> SQLUserRepository : findUsername(username)
+SQLUserRepository -> DatabaseConnector : getConnection()
+DatabaseConnector -> Database : SELECT Users WHERE username=?
 
-alt Information is correct
-    AccountManager --> LoginScreen : login successful
-else Information is incorrect
-    AccountManager --> LoginScreen : show error message
+Database --> SQLUserRepository : user data
+SQLUserRepository --> AccountManager : UserProfile
+
+alt password correct
+    AccountManager -> LoginScreen : return UserProfile
+    LoginScreen -> DashboardGUI : displaySavedData(user)
+    DashboardGUI -> User : show dashboard
+else password incorrect
+    AccountManager -> LoginScreen : login failed
+    LoginScreen -> User : show error message
 end
 
 @enduml
