@@ -1,67 +1,119 @@
 @startuml
-package "UI Layer" {
-    class LoginScreen {
-        + onRegisterSubmit(username: String, password: String): void
-        + onLoginSubmit(username: String, password: String): void
-        + showMessage(message: String): void
-    }
 
-    class DashboardGUI {
-        + displaySavedData(profile: UserProfile): void
-        + selectGameMode(mode: String): void
-    }
+interface IUserDB {
+    + usernameExists(username : String) : boolean
+    + save(user : UserProfile) : void
+    + findUsername(username : String) : UserProfile
 }
 
-package "Logic Layer" {
-    class AccountManager {
-        + register(username: String, password: String): Boolean
-        + login(username: String, password: String): UserProfile
-    }
+interface IDBConnection {
+    + openConnection() : void
+    + getConnection() : Connection
 }
 
-package "Data Layer" {
-    class UserProfile {
-        - userId: String
-        - username: String
-        - passwordHash: String
-        - scores: int
-        - rankings: int
-        - campaignProgress: int
-        + getSavedParties(): List<String>
-    }
+class UserProfile {
+    - userId : String
+    - username : String
+    - password : String
+    - scores : int
+    - rankings : int
+    - campaignProgress : int
+    - savedParties : List<String>
 
-    interface IUserDB {
-        + usernameExists(username: String): Boolean
-        + save(user: UserProfile): void
-        + findUsername(username: String): UserProfile
-    }
+    + UserProfile()
+    + UserProfile(userId : String, username : String, password : String)
 
-    class SQLUserRepository {
-        + usernameExists(username: String): Boolean
-        + save(user: UserProfile): void
-        + findUsername(username: String): UserProfile
-    }
+    + getUserId() : String
+    + setUserId(userId : String) : void
 
-    interface IDBConnection {
-        + openConnection(): void
-        + executeQuery(sql: String): ResultSet
-    }
+    + getUsername() : String
+    + setUsername(username : String) : void
 
-    class DatabaseConnector {
-        + openConnection(): void
-        + executeQuery(sql: String): ResultSet
-    }
+    + getPassword() : String
+    + setPassword(password : String) : void
+
+    + getScores() : int
+    + setScores(scores : int) : void
+
+    + getRankings() : int
+    + setRankings(rankings : int) : void
+
+    + getCampaignProgress() : int
+    + setCampaignProgress(campaignProgress : int) : void
+
+    + getSavedParties() : List<String>
+    + setSavedParties(savedParties : List<String>) : void
+    + addSavedParty(partyName : String) : void
 }
 
-' Relationships
-LoginScreen ..> AccountManager : uses
-AccountManager ..> IUserDB : uses
-IUserDB <|.. SQLUserRepository : implements
+class AccountManager {
+    - userDB : IUserDB
 
-SQLUserRepository ..> IDBConnection : uses
-DatabaseConnector ..|> IDBConnection : implements
+    + AccountManager(userDB : IUserDB)
 
-AccountManager ..> DashboardGUI : navigates to after login
-DashboardGUI ..> UserProfile : displays
+    + register(username : String, password : String) : boolean
+    + login(username : String, password : String) : UserProfile
+}
+
+class SQLUserRepository {
+    - dbConnection : IDBConnection
+
+    + SQLUserRepository(dbConnection : IDBConnection)
+
+    + usernameExists(username : String) : boolean
+    + save(user : UserProfile) : void
+    + findUsername(username : String) : UserProfile
+}
+
+class DatabaseConnector {
+    - instance : DatabaseConnector {static}
+    - connection : Connection
+
+    - DatabaseConnector()
+
+    + getInstance() : DatabaseConnector {static}
+    + openConnection() : void
+    + getConnection() : Connection
+}
+
+class LoginScreen {
+    - usernameField : JTextField
+    - passwordField : JPasswordField
+    - registerButton : JButton
+    - loginButton : JButton
+    - accountManager : AccountManager
+
+    + LoginScreen(accountManager : AccountManager)
+
+    + onRegisterSubmit(username : String, password : String) : void
+    + onLoginSubmit(username : String, password : String) : void
+    + showMessage(message : String) : void
+}
+
+class DashboardGUI {
+    - infoArea : JTextArea
+
+    + DashboardGUI()
+    + displaySavedData(profile : UserProfile) : void
+    + selectGameMode(mode : String) : void
+}
+
+class ProfileCreationMain {
+    + main(args : String[]) : void
+}
+
+LoginScreen --> AccountManager
+AccountManager --> IUserDB
+SQLUserRepository ..|> IUserDB
+
+SQLUserRepository --> IDBConnection
+DatabaseConnector ..|> IDBConnection
+
+DashboardGUI --> UserProfile
+
+ProfileCreationMain --> DatabaseConnector
+ProfileCreationMain --> SQLUserRepository
+ProfileCreationMain --> AccountManager
+ProfileCreationMain --> LoginScreen
 
 @enduml
