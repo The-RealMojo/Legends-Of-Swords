@@ -13,14 +13,13 @@ public class SQLUserRepository implements IUserDB {
         this.dbConnection = dbConnection;
     }
 
-    // Checks if username exists in the database
     @Override
     public boolean usernameExists(String username) {
         boolean exists = false;
 
         try {
             Connection conn = dbConnection.getConnection();
-            String sql = "SELECT * FROM Users WHERE username = ?";
+            String sql = "SELECT 1 FROM Users WHERE username = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, username);
 
@@ -39,7 +38,6 @@ public class SQLUserRepository implements IUserDB {
         return exists;
     }
 
-    // Saves new user to database
     @Override
     public void save(UserProfile user) {
         try {
@@ -48,7 +46,7 @@ public class SQLUserRepository implements IUserDB {
 
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, user.getUsername());
-            stmt.setString(2, user.getPassword());   // FIXED
+            stmt.setString(2, user.getPassword());
 
             stmt.executeUpdate();
             stmt.close();
@@ -57,7 +55,6 @@ public class SQLUserRepository implements IUserDB {
         }
     }
 
-    // Finds user by username
     @Override
     public UserProfile findUsername(String username) {
         UserProfile user = null;
@@ -65,7 +62,6 @@ public class SQLUserRepository implements IUserDB {
         try {
             Connection conn = dbConnection.getConnection();
             String sql = "SELECT * FROM Users WHERE username = ?";
-
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, username);
 
@@ -75,7 +71,8 @@ public class SQLUserRepository implements IUserDB {
                 user = new UserProfile();
                 user.setUserId(String.valueOf(rs.getInt("user_id")));
                 user.setUsername(rs.getString("username"));
-                user.setPassword(rs.getString("password"));  // FIXED
+                user.setPassword(rs.getString("password"));
+
                 user.setScores(0);
                 user.setRankings(0);
                 user.setCampaignProgress(0);
@@ -88,5 +85,29 @@ public class SQLUserRepository implements IUserDB {
         }
 
         return user;
+    }
+
+    private void loadSavedParties(UserProfile user, int userId) {
+        try {
+            Connection conn = dbConnection.getConnection();
+
+            String sql = "SELECT party_name FROM Parties WHERE user_id = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, userId);
+
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                String partyName = rs.getString("party_name");
+                if (partyName != null && !partyName.trim().isEmpty()) {
+                    user.addSavedParty(partyName);
+                }
+            }
+
+            rs.close();
+            stmt.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
