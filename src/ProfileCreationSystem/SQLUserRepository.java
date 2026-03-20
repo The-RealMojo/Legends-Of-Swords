@@ -68,14 +68,17 @@ public class SQLUserRepository implements IUserDB {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
+                int userId = rs.getInt("user_id");
+
                 user = new UserProfile();
-                user.setUserId(String.valueOf(rs.getInt("user_id")));
+                user.setUserId(String.valueOf(userId));
                 user.setUsername(rs.getString("username"));
                 user.setPassword(rs.getString("password"));
-
                 user.setScores(0);
                 user.setRankings(0);
                 user.setCampaignProgress(0);
+
+                loadSavedParties(user, userId);
             }
 
             rs.close();
@@ -90,7 +93,6 @@ public class SQLUserRepository implements IUserDB {
     private void loadSavedParties(UserProfile user, int userId) {
         try {
             Connection conn = dbConnection.getConnection();
-
             String sql = "SELECT party_name FROM Parties WHERE user_id = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setInt(1, userId);
@@ -98,10 +100,7 @@ public class SQLUserRepository implements IUserDB {
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                String partyName = rs.getString("party_name");
-                if (partyName != null && !partyName.trim().isEmpty()) {
-                    user.addSavedParty(partyName);
-                }
+                user.addSavedParty(rs.getString("party_name"));
             }
 
             rs.close();
