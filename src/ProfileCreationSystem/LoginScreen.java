@@ -1,4 +1,6 @@
-package ProfileCreationSystem;
+package Profile;
+
+import pvp.PvpManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -102,7 +104,8 @@ public class LoginScreen extends JFrame {
         if (user != null) {
             showMessage("Login successful. Welcome, " + user.getUsername() + "!");
 
-            DashboardGUI dashboard = new DashboardGUI();
+            PvpManager pvpManager = new PvpManager(accountManager.getUserDB());
+            DashboardGUI dashboard = new DashboardGUI(pvpManager);
             dashboard.displaySavedData(user);
             dashboard.setVisible(true);
 
