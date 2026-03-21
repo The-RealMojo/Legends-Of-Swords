@@ -1,5 +1,6 @@
-package ProfileCreationSystem;
+package Profile;
 
+// Handles registration and login logic for the profile creation system.
 public class AccountManager {
     private IUserDB userDB;
 
@@ -16,12 +17,14 @@ public class AccountManager {
             return false;
         }
 
+        username = username.trim();
+
         if (userDB.usernameExists(username)) {
             return false;
         }
 
         UserProfile newUser = new UserProfile();
-        newUser.setUsername(username.trim());
+        newUser.setUsername(username);
         newUser.setPassword(password);
 
         userDB.save(newUser);
@@ -37,7 +40,9 @@ public class AccountManager {
             return null;
         }
 
-        UserProfile user = userDB.findUsername(username.trim());
+        username = username.trim();
+
+        UserProfile user = userDB.findUsername(username);
 
         if (user == null) {
             return null;
@@ -48,5 +53,9 @@ public class AccountManager {
         }
 
         return null;
+    }
+
+    public IUserDB getUserDB() {
+        return userDB;
     }
 }
