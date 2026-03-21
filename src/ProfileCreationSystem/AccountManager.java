@@ -1,6 +1,5 @@
 package Profile;
 
-// Handles registration and login logic for the profile creation system.
 public class AccountManager {
     private IUserDB userDB;
 
