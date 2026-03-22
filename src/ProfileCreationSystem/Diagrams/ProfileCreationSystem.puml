@@ -1,0 +1,119 @@
+@startuml
+
+interface IUserDB {
+    + usernameExists(username : String) : boolean
+    + save(user : UserProfile) : void
+    + findUsername(username : String) : UserProfile
+}
+
+interface IDBConnection {
+    + openConnection() : void
+    + getConnection() : Connection
+}
+
+class UserProfile {
+    - userId : String
+    - username : String
+    - password : String
+    - scores : int
+    - rankings : int
+    - campaignProgress : int
+    - savedParties : List<String>
+
+    + UserProfile()
+    + UserProfile(userId : String, username : String, password : String)
+
+    + getUserId() : String
+    + setUserId(userId : String) : void
+
+    + getUsername() : String
+    + setUsername(username : String) : void
+
+    + getPassword() : String
+    + setPassword(password : String) : void
+
+    + getScores() : int
+    + setScores(scores : int) : void
+
+    + getRankings() : int
+    + setRankings(rankings : int) : void
+
+    + getCampaignProgress() : int
+    + setCampaignProgress(campaignProgress : int) : void
+
+    + getSavedParties() : List<String>
+    + setSavedParties(savedParties : List<String>) : void
+    + addSavedParty(partyName : String) : void
+}
+
+class AccountManager {
+    - userDB : IUserDB
+
+    + AccountManager(userDB : IUserDB)
+
+    + register(username : String, password : String) : boolean
+    + login(username : String, password : String) : UserProfile
+}
+
+class SQLUserRepository {
+    - dbConnection : IDBConnection
+
+    + SQLUserRepository(dbConnection : IDBConnection)
+
+    + usernameExists(username : String) : boolean
+    + save(user : UserProfile) : void
+    + findUsername(username : String) : UserProfile
+}
+
+class DatabaseConnector {
+    - instance : DatabaseConnector {static}
+    - connection : Connection
+
+    - DatabaseConnector()
+
+    + getInstance() : DatabaseConnector {static}
+    + openConnection() : void
+    + getConnection() : Connection
+}
+
+class LoginScreen {
+    - usernameField : JTextField
+    - passwordField : JPasswordField
+    - registerButton : JButton
+    - loginButton : JButton
+    - accountManager : AccountManager
+
+    + LoginScreen(accountManager : AccountManager)
+
+    + onRegisterSubmit(username : String, password : String) : void
+    + onLoginSubmit(username : String, password : String) : void
+    + showMessage(message : String) : void
+}
+
+class DashboardGUI {
+    - infoArea : JTextArea
+
+    + DashboardGUI()
+    + displaySavedData(profile : UserProfile) : void
+    + selectGameMode(mode : String) : void
+}
+
+class ProfileCreationMain {
+    + main(args : String[]) : void
+}
+
+LoginScreen --> AccountManager
+AccountManager --> IUserDB
+SQLUserRepository ..|> IUserDB
+
+SQLUserRepository --> IDBConnection
+DatabaseConnector ..|> IDBConnection
+
+DashboardGUI --> UserProfile
+
+ProfileCreationMain --> DatabaseConnector
+ProfileCreationMain --> SQLUserRepository
+ProfileCreationMain --> AccountManager
+ProfileCreationMain --> LoginScreen
+
+@enduml
