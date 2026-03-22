@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="com.obiscr.chatgpt.settings.EasyCodeState">
+    <option name="projectFiles" value="$PROJECT_DIR$/src/battle/Action.java;C:/Users/janfi/IdeaProjects/Legends-Of-Swords/src/battle/Battle.java;C:/Users/janfi/IdeaProjects/Legends-Of-Swords/src/battle/Enemy.java;C:/Users/janfi/IdeaProjects/Legends-Of-Swords/src/battle/Hero.java;C:/Users/janfi/IdeaProjects/Legends-Of-Swords/src/battle/Main.java;C:/Users/janfi/IdeaProjects/Legends-Of-Swords/src/battle/Unit.java;C:/Users/janfi/IdeaProjects/Legends-Of-Swords/src/Pve/BattleRoom.java;C:/Users/janfi/IdeaProjects/Legends-Of-Swords/src/Pve/Campaign.java;C:/Users/janfi/IdeaProjects/Legends-Of-Swords/src/Pve/InnRoom.java;C:/Users/janfi/IdeaProjects/Legends-Of-Swords/src/Pve/Party.java;C:/Users/janfi/IdeaProjects/Legends-Of-Swords/src/Pve/PvEController.java;C:/Users/janfi/IdeaProjects/Legends-Of-Swords/src/Pve/Room.java" />
+  </component>
+</project>

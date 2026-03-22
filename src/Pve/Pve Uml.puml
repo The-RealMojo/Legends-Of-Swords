@@ -1,0 +1,47 @@
+@startuml
+' PvE Classes - Deliverable 1
+package Pve {
+
+    class Party {
+        -heroes: List<Hero>
+        +addHero(hero: Hero)
+        +getHeroes(): List<Hero>
+    }
+
+    abstract class Room {
+        -floor: int
+        +enter(party: Party)
+    }
+
+    class InnRoom {
+        +enter(party: Party)
+    }
+
+    class BattleRoom {
+        +enter(party: Party)
+    }
+
+    class Campaign {
+        -party: Party
+        -currentRoom: int
+        +start()
+        +getParty(): Party
+    }
+
+    class PveController {
+        -campaign: Campaign
+        +PveController(heroList: List<Hero>)
+        +startCampaign()
+        +nextRoom()
+        +getCampaign(): Campaign
+    }
+
+    ' Relationships
+    Party --> Hero
+    InnRoom --|> Room
+    BattleRoom --|> Room
+    PveController --> Campaign
+    Campaign --> Party
+}
+
+@enduml

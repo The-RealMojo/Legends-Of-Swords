@@ -1,0 +1,36 @@
+@startuml
+actor Player
+participant "PveController" as Controller
+participant "Campaign" as Campaign
+participant "Party" as Party
+participant "BattleRoom" as BattleRoom
+participant "InnRoom" as InnRoom
+participant "Hero" as Hero
+
+== Start Campaign ==
+Player -> Controller : startCampaign()
+Controller -> Campaign : start()
+Campaign -> Party : getHeroes()
+Party -> Hero : initialize heroes
+
+== Move to Next Room ==
+Player -> Controller : nextRoom()
+alt Battle Room
+    Controller -> BattleRoom : enter(Party)
+    BattleRoom -> Party : getHeroes()
+    Party -> Hero : interact in battle
+else Inn Room
+    Controller -> InnRoom : enter(Party)
+    InnRoom -> Party : getHeroes()
+    Party -> Hero : perform rest/recovery
+end
+
+== Retrieve Campaign Info ==
+Player -> Controller : getCampaign()
+Controller -> Campaign : getParty()
+Campaign -> Party : getHeroes()
+Party -> Hero : retrieve hero info
+Party --> Campaign : return hero list
+Campaign --> Controller : return campaign info
+Controller --> Player : display campaign info
+@enduml
