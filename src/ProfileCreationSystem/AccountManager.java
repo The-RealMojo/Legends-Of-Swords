@@ -1,4 +1,4 @@
-package Profile;
+package ProfileCreationSystem;
 
 public class AccountManager {
     private IUserDB userDB;
