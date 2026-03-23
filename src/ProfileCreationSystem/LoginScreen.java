@@ -1,4 +1,4 @@
-package Profile;
+package ProfileCreationSystem;
 
 import pvp.PvpManager;
 
