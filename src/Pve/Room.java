@@ -1,13 +1,15 @@
 package Pve;
 
 public abstract class Room {
+    protected int floor;
 
-    protected int roomNumber;
-
-    public Room(int roomNumber) {
-        this.roomNumber = roomNumber;
+    public Room(int floor) {
+        this.floor = floor;
     }
 
-    // All rooms must implement this
-    public abstract void enter(Party party);
+    public abstract void execute(Party party);
+
+    public int getFloor() {
+        return floor;
+    }
 }
