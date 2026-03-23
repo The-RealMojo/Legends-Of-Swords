@@ -1,9 +1,9 @@
 package ProfileCreationSystem;
 
+import database.DatabaseConnector;
+
 public class ProfileCreationMain {
-
     public static void main(String[] args) {
-
         DatabaseConnector connector = DatabaseConnector.getInstance();
         connector.openConnection();
 
