@@ -15,7 +15,7 @@ public class GameSaveDAO {
     private final DatabaseConnector db;
 
     public GameSaveDAO() {
-        this.db = new DatabaseConnector();
+        this.db = DatabaseConnector.getInstance();
     }
 
     // Saves the party state and campaign progress

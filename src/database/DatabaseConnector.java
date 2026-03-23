@@ -10,8 +10,20 @@ public class DatabaseConnector {
     private static final String USER = "root";
     private static final String PASSWORD = "password";
 
+    private static DatabaseConnector instance;
     private Connection connection;
 
+    private DatabaseConnector() {
+    }
+
+    public static DatabaseConnector getInstance() {
+        if (instance == null) {
+            instance = new DatabaseConnector();
+        }
+        return instance;
+    }
+
+    @Override
     public void openConnection() {
         try {
             if (connection == null || connection.isClosed()) {
@@ -24,6 +36,7 @@ public class DatabaseConnector {
         }
     }
 
+    @Override
     public Connection getConnection() {
         openConnection();
         return connection;
