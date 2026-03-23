@@ -5,52 +5,42 @@ import java.util.*;
 
 public class BattleRoom extends Room {
 
-    public BattleRoom(int roomNumber) {
-        super(roomNumber);
+    public BattleRoom(int floor) {
+        super(floor);
     }
 
     @Override
-    public void enter(Party party) {
-        System.out.println("Entering Battle Room #" + roomNumber);
+    public void execute(Party party) {
+        System.out.println("Battle Room at floor " + floor);
 
         List<Unit> enemies = generateEnemies(party);
 
-        Battle battle = new Battle(party.getMembers(), enemies);
-        battle.startBattle();
+        List<Unit> heroesAsUnits = new ArrayList<>(party.getHeroes());
 
-        if (party.hasAliveMembers()) {
-            rewardPlayer(party, enemies);
-        }
+        Battle battle = new Battle(heroesAsUnits, enemies);
+        battle.startBattle();
     }
 
     private List<Unit> generateEnemies(Party party) {
         List<Unit> enemies = new ArrayList<>();
+        Random rand = new Random();
 
-        int playerLevel = party.getTotalLevel();
-        int enemyCount = (int)(Math.random() * 5) + 1;
+        int totalLevel = party.getTotalLevel();
+        int count = rand.nextInt(5) + 1;
 
-        for (int i = 0; i < enemyCount; i++) {
-            int level = Math.max(1, playerLevel - 5 + (int)(Math.random() * 10));
-            enemies.add(new Enemy("Enemy" + i, level,
-                    10 + level, 5 + level,
-                    50 + level * 10, 20));
+        for (int i = 0; i < count; i++) {
+            int level = Math.max(1, totalLevel - 10 + rand.nextInt(11));
+
+            enemies.add(new Enemy(
+                    "Enemy" + i,
+                    level,
+                    level * 5,
+                    level * 3,
+                    level * 20,
+                    level * 10
+            ));
         }
 
         return enemies;
-    }
-
-    private void rewardPlayer(Party party, List<Unit> enemies) {
-        int totalExp = 0;
-        int totalGold = 0;
-
-        for (Unit e : enemies) {
-            totalExp += 50 * e.getLevel();
-            totalGold += 75 * e.getLevel();
-        }
-
-        party.addGold(totalGold);
-        party.gainExperience(totalExp);
-
-        System.out.println("Gained EXP: " + totalExp + ", Gold: " + totalGold);
     }
 }

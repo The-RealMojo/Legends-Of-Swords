@@ -1,47 +1,87 @@
 @startuml
-' PvE Classes - Deliverable 1
-package Pve {
 
-    class Party {
-        -heroes: List<Hero>
-        +addHero(hero: Hero)
-        +getHeroes(): List<Hero>
-    }
-
-    abstract class Room {
-        -floor: int
-        +enter(party: Party)
-    }
-
-    class InnRoom {
-        +enter(party: Party)
-    }
-
-    class BattleRoom {
-        +enter(party: Party)
-    }
-
-    class Campaign {
-        -party: Party
-        -currentRoom: int
-        +start()
-        +getParty(): Party
-    }
-
-    class PveController {
-        -campaign: Campaign
-        +PveController(heroList: List<Hero>)
-        +startCampaign()
-        +nextRoom()
-        +getCampaign(): Campaign
-    }
-
-    ' Relationships
-    Party --> Hero
-    InnRoom --|> Room
-    BattleRoom --|> Room
-    PveController --> Campaign
-    Campaign --> Party
+' =========================
+' PvE Controller Layer
+' =========================
+class PvEController {
+    - Campaign campaign
+    + startCampaign(List<Hero>)
+    + nextRoom()
+    + getCampaign(): Campaign
 }
+
+' =========================
+' Campaign Layer
+' =========================
+class Campaign {
+    - Party party
+    - int currentRoom
+    + start()
+    + nextRoom()
+    + getParty(): Party
+    + getCurrentRoom(): int
+}
+
+' =========================
+' Factory Pattern
+' =========================
+class RoomFactory {
+    + createRoom(int floor, Party party): Room
+}
+
+
+abstract class Room {
+    - int floor
+    + execute(Party party)
+}
+
+class BattleRoom {
+    - List<Enemy> enemies
+    + execute(Party party)
+    - generateEnemies(Party party)
+}
+
+class InnRoom {
+    + execute(Party party)
+    - healParty(Party party)
+    - offerShop(Party party)
+    - offerRecruitment(Party party)
+}
+
+Room <|-- BattleRoom
+Room <|-- InnRoom
+
+class Party {
+    - List<Hero> heroes
+    - int gold
+    + addHero(Hero h)
+    + getHeroes(): List<Hero>
+    + getTotalLevel(): int
+    + addGold(int g)
+    + spendGold(int g)
+    + getGold(): int
+}
+
+class Hero {
+    + getLevel(): int
+    + restoreHp(int)
+    + restoreMana(int)
+}
+
+class Enemy
+
+'
+class Battle {
+    + startBattle()
+}
+
+
+PvEController --> Campaign
+Campaign --> Party
+Campaign --> RoomFactory
+RoomFactory --> Room
+BattleRoom --> Battle
+BattleRoom --> Enemy
+Party --> Hero
 
 @enduml

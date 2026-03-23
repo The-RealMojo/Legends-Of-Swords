@@ -1,49 +1,39 @@
 package Pve;
 
-public class Campaign {
+import battle.Hero;
+import java.util.*;
 
+public class Campaign {
     private Party party;
     private int currentRoom;
+    private final int maxRooms = 30;
 
-    public Campaign(Party party) {
-        this.party = party;
-        this.currentRoom = 1;
+    public Campaign(List<Hero> heroes) {
+        this.party = new Party(heroes);
+        this.currentRoom = 0;
     }
 
     public void start() {
-        while (currentRoom <= 30 && party.hasAliveMembers()) {
+        System.out.println("Campaign started!");
 
-            Room room = generateRoom();
-            room.enter(party);
-
+        while (currentRoom < maxRooms) {
             currentRoom++;
+
+            Room room = RoomFactory.createRoom(currentRoom, party.getTotalLevel());
+            room.execute(party);
+
+            party.addGold(100);
         }
 
         endCampaign();
     }
 
-    private Room generateRoom() {
-        int totalLevel = party.getTotalLevel();
-
-        int bonus = (totalLevel / 10) * 3;
-        int battleChance = 60 + bonus;
-
-        if (Math.random() * 100 < battleChance) {
-            return new BattleRoom(currentRoom);
-        } else {
-            return new InnRoom(currentRoom);
-        }
-    }
-
     private void endCampaign() {
-        int score = calculateScore();
-        System.out.println("Campaign finished. Score: " + score);
+        System.out.println("Campaign finished!");
+        System.out.println("Final Score: " + calculateScore());
     }
 
     private int calculateScore() {
-        int levelScore = party.getTotalLevel() * 100;
-        int goldScore = party.getGold() * 10;
-
-        return levelScore + goldScore;
+        return (party.getTotalLevel() * 100) + (party.getGold() * 10);
     }
 }

@@ -1,52 +1,33 @@
 package Pve;
 
-import battle.Unit;
+import battle.Hero;
 import java.util.*;
 
 public class Party {
-
-    private List<Unit> members;
+    private List<Hero> heroes;
     private int gold;
-    private int experience;
 
-    public Party() {
-        members = new ArrayList<>();
-        gold = 0;
-        experience = 0;
+    public Party(List<Hero> heroes) {
+        this.heroes = heroes;
+        this.gold = 500; // start gold
     }
 
-    public void addMember(Unit u) {
-        members.add(u);
-    }
-
-    public List<Unit> getMembers() {
-        return members;
+    public List<Hero> getHeroes() {
+        return heroes;
     }
 
     public int getTotalLevel() {
         int sum = 0;
-        for (Unit u : members) {
-            sum += u.getLevel();
-        }
+        for (Hero h : heroes) sum += h.getLevel();
         return sum;
-    }
-
-    public boolean hasAliveMembers() {
-        for (Unit u : members) {
-            if (u.isAlive()) return true;
-        }
-        return false;
-    }
-
-    public void addGold(int amount) {
-        gold += amount;
     }
 
     public int getGold() {
         return gold;
     }
 
-    public void gainExperience(int exp) {
-        experience += exp;
+    public void addGold(int amount) {
+        gold += amount;
+        if (gold < 0) gold = 0;
     }
 }
