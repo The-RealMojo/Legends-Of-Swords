@@ -18,7 +18,7 @@ public class InnRoom extends Room {
         recruitHero(party);
     }
 
-    // ✅ Heal + revive
+    //
     private void healAll(Party party) {
         for (Hero h : party.getHeroes()) {
             h.restoreHp(9999);
@@ -27,7 +27,7 @@ public class InnRoom extends Room {
         System.out.println("All heroes fully healed!");
     }
 
-    // ✅ Shop system (auto-buy for Deliverable 2)
+    //
     private void shop(Party party) {
         System.out.println("Visiting shop...");
 
@@ -54,7 +54,7 @@ public class InnRoom extends Room {
         }
     }
 
-    // ✅ Recruitment system
+    //
     private void recruitHero(Party party) {
         if (floor > 10) return;
         if (party.getHeroes().size() >= 5) return;
