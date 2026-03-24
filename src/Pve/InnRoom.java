@@ -57,7 +57,10 @@ public class InnRoom extends Room {
     //
     private void recruitHero(Party party) {
         if (floor > 10) return;
-        if (party.getHeroes().size() >= 5) return;
+        if (party.getHeroes().size() >= 5) {
+            System.out.println("Party is full.");
+            return;
+        }
 
         Random rand = new Random();
         int level = rand.nextInt(4) + 1;
@@ -78,7 +81,7 @@ public class InnRoom extends Room {
                     level * 10
             );
 
-            party.getHeroes().add(newHero);
+            party.addHero(newHero);
 
             System.out.println("Hero recruited!");
         } else {
