@@ -17,15 +17,15 @@ public class Party {
     }
 
 
-    public void addHero(Hero hero) {
-        if (hero == null) return;
+    public void addHero(Hero h) {
+        if (h == null) return;
 
         if (heroes.size() >= 5) {
             System.out.println("Party is full. Cannot add more heroes.");
             return;
         }
 
-        heroes.add(hero);
+        heroes.add(h);
     }
 
     public int getTotalLevel() {

@@ -1,0 +1,27 @@
+@startuml
+title UC4 - Enter InnRoom
+
+actor Player
+participant "PvEController" as Controller
+participant "Campaign" as Campaign
+participant "RoomFactory" as Factory
+participant "InnRoom" as InnRoom
+participant "Party" as Party
+participant "Hero" as Hero
+
+Player -> Controller : startCampaign(heroes)
+Controller -> Campaign : start()
+Campaign -> Factory : createRoom(currentRoom, party.getTotalLevel())
+Factory -> InnRoom : return InnRoom
+Campaign -> InnRoom : execute(party)
+
+InnRoom -> Party : getHeroes()
+InnRoom -> Hero : restoreHp(9999)
+InnRoom -> Hero : restoreMana(9999)
+InnRoom -> Party : getGold()
+InnRoom -> Party : addGold(-200 or -150)
+InnRoom -> Party : addHero(newHero)
+InnRoom -> Hero : initialize newHero(level, stats)
+
+InnRoom -> Campaign : return
+@enduml
