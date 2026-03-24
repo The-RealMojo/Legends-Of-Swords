@@ -16,6 +16,18 @@ public class Party {
         return heroes;
     }
 
+
+    public void addHero(Hero hero) {
+        if (hero == null) return;
+
+        if (heroes.size() >= 5) {
+            System.out.println("Party is full. Cannot add more heroes.");
+            return;
+        }
+
+        heroes.add(hero);
+    }
+
     public int getTotalLevel() {
         int sum = 0;
         for (Hero h : heroes) sum += h.getLevel();
