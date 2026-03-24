@@ -24,7 +24,7 @@ public class AccountManager {
 
         UserProfile newUser = new UserProfile();
         newUser.setUsername(username);
-        newUser.setPassword(password);
+        newUser.setPassword(PasswordUtil.hashPassword(password));
 
         userDB.save(newUser);
         return true;
@@ -47,7 +47,7 @@ public class AccountManager {
             return null;
         }
 
-        if (user.getPassword().equals(password)) {
+        if (user.getPassword().equals(PasswordUtil.hashPassword(password))) {
             return user;
         }
 

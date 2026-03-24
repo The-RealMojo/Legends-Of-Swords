@@ -48,8 +48,7 @@ public class JdbcUserDB implements IUserDB {
 
     @Override
     public void recordPvpResult(String winnerUsername, String loserUsername) {
-        int winnerId = dao.getUserIdByUsername(winnerUsername);
-        int loserId = dao.getUserIdByUsername(loserUsername);
-        dao.recordPvpResult(winnerId, loserId);
+        // Just pass the usernames straight through! GameSaveDAO handles the rest now.
+        dao.recordPvpResult(winnerUsername, loserUsername);
     }
 }

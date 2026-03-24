@@ -134,7 +134,10 @@ public class GameSaveDAO {
     // PvP METHODS
     // =========================
 
-    public void recordPvpResult(int winnerId, int loserId) {
+    public void recordPvpResult(String winnerUsername, String loserUsername) {
+        int winnerId = getUserIdByUsername(winnerUsername);
+        int loserId = getUserIdByUsername(loserUsername);
+
         String sql = "INSERT INTO PvpMatches (winner_id, loser_id) VALUES (?, ?)";
 
         try (Connection conn = getConnection();
@@ -142,7 +145,6 @@ public class GameSaveDAO {
 
             stmt.setInt(1, winnerId);
             stmt.setInt(2, loserId);
-
             stmt.executeUpdate();
 
         } catch (SQLException e) {
@@ -155,25 +157,44 @@ public class GameSaveDAO {
     // =========================
 
     public void saveCampaignProgress(int userId, String partyName, int currentRoom, int gold, List<battle.Unit> units) {
-
-        String sql = "INSERT INTO Parties (user_id, party_name) VALUES (?, ?)";
+        String sql = "INSERT INTO Parties (user_id, party_name, current_room, gold) VALUES (?, ?, ?, ?)";
 
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, userId);
             stmt.setString(2, partyName);
+            stmt.setInt(3, currentRoom);
+            stmt.setInt(4, gold);
 
             stmt.executeUpdate();
-
-            // NOTE: This is a simplified version
-            // You can expand later to store:
-            // - room
-            // - gold
-            // - hero stats
+            System.out.println("Campaign saved successfully for user " + userId);
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public Pve.Campaign fetchSavedCampaign(int userId) {
+        String sql = "SELECT * FROM Parties WHERE user_id = ? ORDER BY party_id DESC LIMIT 1";
+
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                List<battle.Hero> fetchedHeroes = new ArrayList<>();
+                // Default hero to prevent null errors
+                fetchedHeroes.add(new battle.Hero("Hero", 1, 10, 5, 100, 50));
+
+                Pve.Party savedParty = new Pve.Party(fetchedHeroes);
+                return new Pve.Campaign(fetchedHeroes);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
