@@ -13,6 +13,30 @@ public class Battle {
     private Queue<Unit> waitQueue;
 
     private boolean battleOver;
+    private List<battle.observer.BattleObserver> observers = new ArrayList<>();
+
+    public void addObserver(battle.observer.BattleObserver o) {
+        observers.add(o);
+    }
+
+    public void notifyTurnStart(Unit unit) {
+        for (var o : observers) o.onTurnStart(unit);
+    }
+
+    public void notifyAction(Unit unit, Action action) {
+        for (var o : observers) o.onAction(unit, action);
+    }
+
+    public void notifyDamage(Unit attacker, Unit target, int damage) {
+        for (var o : observers) o.onDamage(attacker, target, damage);
+    }
+
+    public void notifyBattleEnd(String winner) {
+        for (var o : observers) o.onBattleEnd(winner);
+    }
+
+    public List<Unit> getPlayerParty() { return playerParty; }
+    public List<Unit> getEnemyParty() { return enemyParty; }
 
     public Battle(List<Unit> playerParty, List<Unit> enemyParty) {
         this.playerParty = playerParty;
@@ -77,14 +101,16 @@ public class Battle {
 
         switch (action) {
             case ATTACK:
-                handleAttack(current);
+                new battle.strategy.impl.AttackStrategy().execute(this, current);
                 break;
             case DEFEND:
-                handleDefend(current);
+                new battle.strategy.impl.DefendStrategy().execute(this, current);
+                break;
+            case CAST:
+                new battle.strategy.impl.CastStrategy().execute(this, current);
                 break;
             case WAIT:
-                break;
-            default:
+                new battle.strategy.impl.WaitStrategy().execute(this, current);
                 break;
         }
 
@@ -108,44 +134,34 @@ public class Battle {
             return;
         }
 
-        // Step 3: Decide action (Deliverable 1: always attack)
-        Action action = Action.ATTACK;
+        notifyTurnStart(unit);
 
-        // Step 4 & 5: Execute action
-        if (action == Action.ATTACK) {
-            Unit target = null;
+        battle.strategy.BattleActionStrategy strategy;
+        Action action;
 
-            // Enemy attacks hero
-            if (enemyParty.contains(unit)) {
-                for (Unit u : playerParty) {
-                    if (u.isAlive()) {
-                        target = u;
-                        break;
-                    }
-                }
-            }
-            // Hero attacks enemy
-            else {
-                for (Unit u : enemyParty) {
-                    if (u.isAlive()) {
-                        target = u;
-                        break;
-                    }
-                }
-            }
-
-            if (target != null) {
-                handleAttack(unit);
-            }
+        // Simplified auto-battle logic:
+        if (unit.getMana() >= 10 && Math.random() < 0.3) {
+            strategy = new battle.strategy.impl.CastStrategy();
+            action = Action.CAST;
+        } else if (unit.getHp() < unit.getMaxHp() / 3 && Math.random() < 0.5) {
+            strategy = new battle.strategy.impl.DefendStrategy();
+            action = Action.DEFEND;
+        } else {
+            strategy = new battle.strategy.impl.AttackStrategy();
+            action = Action.ATTACK;
         }
 
-        // Step 6: Re-queue unit if still alive
-        if (unit.isAlive()) {
+        notifyAction(unit, action);
+        strategy.execute(this, unit);
+
+        if (unit.isAlive() && action != Action.WAIT) {
+            waitQueue.add(unit);
+        } else if (unit.isAlive() && action == Action.WAIT) {
             waitQueue.add(unit);
         }
     }
 
-    private void handleAttack(Unit attacker) {
+    public void doAttack(Unit attacker) {
         List<Unit> targetParty = enemyParty.contains(attacker)
                 ? playerParty
                 : enemyParty;
@@ -164,15 +180,12 @@ public class Battle {
         if (damage < 0) damage = 0;
 
         target.takeDamage(damage);
+        notifyDamage(attacker, target, damage);
     }
 
-    private void handleDefend(Unit unit) {
+    public void doDefend(Unit unit) {
         unit.restoreHp(10);
         unit.restoreMana(5);
-    }
-
-    private void handleWait(Unit unit) {
-
     }
 
     public boolean isBattleOver() {
@@ -208,10 +221,9 @@ public class Battle {
                 break;
             }
         }
-        if (heroesAlive) {
-            System.out.println("Heroes win!");
-        } else {
-            System.out.println("Enemies win!");
-        }
+        
+        String winner = heroesAlive ? "Heroes" : "Enemies";
+        System.out.println(winner + " win!");
+        notifyBattleEnd(winner);
     }
 }

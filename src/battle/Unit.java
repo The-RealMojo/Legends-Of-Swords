@@ -55,6 +55,14 @@ public abstract class Unit {
             mana = maxMana;
         }
     }
+    public boolean spendMana(int amount) {
+        if (amount < 0) return false;
+        if (mana >= amount) {
+            mana -= amount;
+            return true;
+        }
+        return false;
+    }
 
     public String getName() {
         return name;
@@ -71,8 +79,20 @@ public abstract class Unit {
     public int getHp() {
         return hp;
     }
+    public int getMaxHp() {
+        return maxHp;
+    }
     public int getMana() {
         return mana;
+    }
+    public int getMaxMana() {
+        return maxMana;
+    }
+    public void setHp(int hp) {
+        this.hp = Math.max(0, Math.min(hp, maxHp));
+    }
+    public void setMana(int mana) {
+        this.mana = Math.max(0, Math.min(mana, maxMana));
     }
 }
 

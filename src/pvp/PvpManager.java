@@ -1,6 +1,6 @@
 package pvp;
 
-import Profile.IUserDB;
+import ProfileCreationSystem.IUserDB;
 import java.util.List;
 
 public class PvpManager {
