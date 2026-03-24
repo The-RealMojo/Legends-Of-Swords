@@ -1,13 +1,14 @@
 package ProfileCreationSystem;
 
-import database.DatabaseConnector;
+import database.GameSaveDAO;
 
 public class ProfileCreationMain {
-    public static void main(String[] args) {
-        DatabaseConnector connector = DatabaseConnector.getInstance();
-        connector.openConnection();
 
-        IUserDB userDB = new SQLUserRepository(connector);
+    public static void main(String[] args) {
+
+        GameSaveDAO dao = new GameSaveDAO();
+
+        JdbcUserDB userDB = new JdbcUserDB(dao);
         AccountManager accountManager = new AccountManager(userDB);
 
         LoginScreen loginScreen = new LoginScreen(accountManager);
