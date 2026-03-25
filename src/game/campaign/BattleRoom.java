@@ -66,18 +66,32 @@ public class BattleRoom extends Room {
         int partySize = Math.max(1, party.getHeroes().size());
         int partyAvg = Math.max(1, party.getTotalLevel() / partySize);
 
+        String[] ENEMY_TYPES = {
+                "Goblin", "Ogre", "Skeleton", "Orc", "Bandit", "Slime"
+        };
+
+        java.util.Map<String, Integer> counts = new java.util.HashMap<>();
+
         for (int i = 0; i < count; i++) {
             int lvl = Math.max(1, partyAvg + rand.nextInt(3) - 1);
 
+            String base = ENEMY_TYPES[rand.nextInt(ENEMY_TYPES.length)];
+
+            int num = counts.getOrDefault(base, 0) + 1;
+            counts.put(base, num);
+
+            String name = base + "_" + num;
+
             enemies.add(new Enemy(
-                    "Enemy_" + (i + 1),
+                    name,
                     lvl,
-                    5 + lvl,      // attack
-                    Math.max(1, lvl),   // defense (not too high early)
-                    70 + lvl * 15,      // hp
-                    20 + lvl * 5        // mana
+                    5 + lvl,             // attack
+                    Math.max(1, lvl),    // defense
+                    70 + lvl * 15,       // hp
+                    0
             ));
         }
+
         return enemies;
     }
 }

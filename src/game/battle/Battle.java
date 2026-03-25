@@ -92,7 +92,15 @@ public class Battle {
 
         switch (action) {
             case ATTACK -> new AttackStrategy().execute(this, current);
-            case DEFEND -> new DefendStrategy().execute(this, current);
+            case DEFEND -> {
+                new DefendStrategy().execute(this, current);
+
+                if (playerParty.contains(current)) {
+                    notifyAbilityResult(current, current.getName() + " recovers 10 HP and 5 Mana");
+                } else {
+                    notifyAbilityResult(current, current.getName() + " recovers 10 HP");
+                }
+            }
             case CAST -> new CastStrategy().execute(this, current);
             case WAIT -> {
                 // Intentionally no immediate action; unit goes to end of round below.
@@ -129,7 +137,10 @@ public class Battle {
 
     public void doDefend(Unit unit) {
         unit.restoreHp(10);
-        unit.restoreMana(5);
+
+        if (playerParty.contains(unit)) {
+            unit.restoreMana(5);
+        }
     }
 
     public void startBattle() {
@@ -222,34 +233,41 @@ public class Battle {
     }
 
     private Action chooseEnemyAction(Unit enemy) {
-        Unit target = chooseTarget(enemy);
+        java.util.Random rand = new java.util.Random();
+
         int livingPlayers = countLiving(playerParty);
         int livingEnemies = countLiving(enemyParty);
 
-        // Enemy-only anti-stall:
-        // In 1v1, never let the enemy defend.
+        // keep your anti-stall logic
         if (livingPlayers == 1 && livingEnemies == 1) {
             return Action.ATTACK;
         }
 
-        // If battle has stalled for several turns, force enemy aggression.
         if (noProgressTurns >= 6) {
             return Action.ATTACK;
         }
 
-        // Basic enemy behavior:
-        // Defend only when low HP and there is meaningful incoming damage.
-        int expectedIncoming = 0;
-        if (target != null) {
-            Unit threateningPlayer = strongestLiving(playerParty);
-            if (threateningPlayer != null) {
-                expectedIncoming = Math.max(0, threateningPlayer.getAttack() - enemy.getDefense());
-            }
+        double hpRatio = (double) enemy.getHp() / enemy.getMaxHp();
+
+        int roll = rand.nextInt(100);
+
+        // low HP → more defensive
+        if (hpRatio < 0.4) {
+            if (roll < 40) return Action.DEFEND;
+            if (roll < 55) return Action.WAIT;
+            return Action.ATTACK;
         }
 
-        if (enemy.getHp() < enemy.getMaxHp() / 4 && expectedIncoming >= 10) {
-            return Action.DEFEND;
+        // mid HP
+        if (hpRatio < 0.7) {
+            if (roll < 20) return Action.DEFEND;
+            if (roll < 30) return Action.WAIT;
+            return Action.ATTACK;
         }
+
+        // high HP → mostly attack
+        if (roll < 10) return Action.DEFEND;
+        if (roll < 15) return Action.WAIT;
 
         return Action.ATTACK;
     }
