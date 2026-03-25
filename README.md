@@ -2,15 +2,13 @@
 ## How to Run
 
 1. Start MySQL
-2. Create database:
-   CREATE DATABASE legends_db;
-
-3. Run schema:
+   
+2. Run schema:
    SOURCE db_schema.sql;
 
-4. Update DatabaseConnector.java:
+3. Update DatabaseConnector.java:
    - username
    - password
 
-5. Run:
+4. Run:
    main.Main
