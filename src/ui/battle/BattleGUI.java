@@ -43,7 +43,7 @@ public class BattleGUI extends JFrame implements BattleObserver {
     // UI
     private void buildUI() {
         setTitle("Battle — Legends of Sword and Wand");
-        setSize(760, 610);
+        setSize(760, 690);
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(8, 8));
@@ -57,7 +57,7 @@ public class BattleGUI extends JFrame implements BattleObserver {
         JPanel parties = new JPanel(new GridLayout(1, 2, 8, 0));
         parties.add(heroPanel);
         parties.add(enemyPanel);
-        parties.setPreferredSize(new Dimension(740, 215));
+        parties.setPreferredSize(new Dimension(740, 390));
         add(parties, BorderLayout.NORTH);
 
         logArea = new JTextPane();

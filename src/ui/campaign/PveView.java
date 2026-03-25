@@ -8,10 +8,8 @@ import game.campaign.PvEController;
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
+import java.util.Map;
 
-/**
- * Swing UI for campaign.
- */
 public class PveView extends JFrame {
 
     private final PvEController controller;
@@ -25,6 +23,7 @@ public class PveView extends JFrame {
     private JButton nextRoomBtn;
     private JButton saveExitBtn;
     private JButton partyInfoBtn;
+    private JButton inventoryBtn;
     private boolean roomInProgress;
 
     public PveView(List<Hero> heroes) {
@@ -91,8 +90,6 @@ public class PveView extends JFrame {
         });
     }
 
-    // UI setup
-
     private void buildUI() {
         setLayout(new BorderLayout(8, 8));
 
@@ -122,9 +119,11 @@ public class PveView extends JFrame {
         nextRoomBtn = new JButton("Next Room →");
         saveExitBtn = new JButton("Save & Exit");
         partyInfoBtn = new JButton("Party Info");
+        inventoryBtn = new JButton("Inventory");
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 6));
         buttonPanel.add(partyInfoBtn);
+        buttonPanel.add(inventoryBtn);
         buttonPanel.add(nextRoomBtn);
         buttonPanel.add(saveExitBtn);
         add(buttonPanel, BorderLayout.SOUTH);
@@ -132,9 +131,8 @@ public class PveView extends JFrame {
         nextRoomBtn.addActionListener(e -> advanceRoom());
         saveExitBtn.addActionListener(e -> saveAndExit());
         partyInfoBtn.addActionListener(e -> showPartyInfo());
+        inventoryBtn.addActionListener(e -> showInventory());
     }
-
-    // Actions
 
     private void advanceRoom() {
         Campaign campaign = controller.getCampaign();
@@ -219,6 +217,137 @@ public class PveView extends JFrame {
         );
     }
 
+    private void showInventory() {
+        Campaign campaign = controller.getCampaign();
+        if (campaign == null) return;
+
+        var party = campaign.getParty();
+        var inv = party.getInventory();
+
+        if (inv.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Inventory is empty.");
+            return;
+        }
+
+        String[] items = inv.entrySet().stream()
+                .map(e -> formatInventoryItem(e.getKey(), e.getValue()))
+                .toArray(String[]::new);
+
+        String chosen = (String) JOptionPane.showInputDialog(
+                this,
+                "Select item to use:",
+                "Inventory",
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                items,
+                items[0]
+        );
+
+        if (chosen == null) return;
+
+        String itemName = chosen.split(" x")[0];
+
+        String[] heroNames = party.getHeroes().stream()
+                .map(Hero::getName)
+                .toArray(String[]::new);
+
+        String heroChoice = (String) JOptionPane.showInputDialog(
+                this,
+                "Use " + itemName + " on which hero?",
+                "Target Hero",
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                heroNames,
+                heroNames[0]
+        );
+
+        if (heroChoice == null) return;
+
+        Hero target = party.getHeroes().stream()
+                .filter(h -> h.getName().equals(heroChoice))
+                .findFirst()
+                .orElse(null);
+
+        if (target == null) return;
+
+        String result = applyItemEffect(target, itemName);
+
+        if (result == null) {
+            JOptionPane.showMessageDialog(this, "That item cannot be used right now.");
+            return;
+        }
+
+        party.useItem(itemName);
+
+        appendLog(result);
+        refreshStatus();
+    }
+
+    private String formatInventoryItem(String itemName, int qty) {
+        return itemName + " x" + qty + " " + getItemDescription(itemName);
+    }
+
+    private String getItemDescription(String itemName) {
+        return switch (itemName) {
+            case "Bread" -> "(+20 HP)";
+            case "Cheese" -> "(+50 HP)";
+            case "Steak" -> "(+200 HP)";
+            case "Water" -> "(+10 Mana)";
+            case "Juice" -> "(+30 Mana)";
+            case "Wine" -> "(+100 Mana)";
+            case "Elixir" -> "(Revive + Full HP + Mana)";
+            default -> "";
+        };
+    }
+
+    private String applyItemEffect(Hero h, String itemName) {
+        return switch (itemName) {
+            case "Bread" -> {
+                int before = h.getHp();
+                h.restoreHp(20);
+                yield h.getName() + " used Bread: +" + (h.getHp() - before) + " HP";
+            }
+            case "Cheese" -> {
+                int before = h.getHp();
+                h.restoreHp(50);
+                yield h.getName() + " used Cheese: +" + (h.getHp() - before) + " HP";
+            }
+            case "Steak" -> {
+                int before = h.getHp();
+                h.restoreHp(200);
+                yield h.getName() + " used Steak: +" + (h.getHp() - before) + " HP";
+            }
+            case "Water" -> {
+                int before = h.getMana();
+                h.restoreMana(10);
+                yield h.getName() + " used Water: +" + (h.getMana() - before) + " Mana";
+            }
+            case "Juice" -> {
+                int before = h.getMana();
+                h.restoreMana(30);
+                yield h.getName() + " used Juice: +" + (h.getMana() - before) + " Mana";
+            }
+            case "Wine" -> {
+                int before = h.getMana();
+                h.restoreMana(100);
+                yield h.getName() + " used Wine: +" + (h.getMana() - before) + " Mana";
+            }
+            case "Elixir" -> {
+                boolean wasDead = !h.isAlive();
+                if (wasDead) {
+                    h.setHp(1);
+                }
+                int beforeHp = h.getHp();
+                int beforeMana = h.getMana();
+                h.restoreHp(9999);
+                h.restoreMana(9999);
+                yield h.getName() + " used Elixir: +" + (h.getHp() - beforeHp) + " HP, +" +
+                        (h.getMana() - beforeMana) + " Mana" + (wasDead ? " (revived)" : "");
+            }
+            default -> null;
+        };
+    }
+
     private void offerPartySave(Campaign campaign) {
         if (dao == null || userId == -1) {
             return;
@@ -273,8 +402,6 @@ public class PveView extends JFrame {
         }
     }
 
-    // Display
-
     private void refreshStatus() {
         Campaign campaign = controller.getCampaign();
         if (campaign == null) {
@@ -288,7 +415,7 @@ public class PveView extends JFrame {
 
         for (Hero hero : campaign.getParty().getHeroes()) {
             JLabel label = new JLabel(String.format(
-                    "<html><b>%s</b><br/>[%s] Lv%d<br/>HP:%d/%d<br/>Mana:%d/%d</html>",
+                    "<html><b>%s</b><br/>[%s] Lv%d<br/>HP:%d/%d<br/>Mana:%d/%d<br/>EXP:%d/%d</html>",
                     hero.getName(),
                     hero.getClassDisplayName(),
                     hero.getLevel(),
