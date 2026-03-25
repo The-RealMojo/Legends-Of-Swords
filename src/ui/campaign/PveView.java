@@ -374,7 +374,8 @@ public class PveView extends JFrame {
                         "Party_" + System.currentTimeMillis(),
                         campaign.getCurrentRoom(),
                         campaign.getParty().getGold(),
-                        new java.util.ArrayList<>(campaign.getParty().getHeroes())
+                        new java.util.ArrayList<>(campaign.getParty().getHeroes()),
+                        campaign.getParty().getInventory()
                 );
                 JOptionPane.showMessageDialog(this, "Party saved (replaced " + replace + ").");
             }
@@ -394,7 +395,8 @@ public class PveView extends JFrame {
                             name,
                             campaign.getCurrentRoom(),
                             campaign.getParty().getGold(),
-                            new java.util.ArrayList<>(campaign.getParty().getHeroes())
+                            new java.util.ArrayList<>(campaign.getParty().getHeroes()),
+                            campaign.getParty().getInventory()
                     );
                     JOptionPane.showMessageDialog(this, "Party saved!");
                 }

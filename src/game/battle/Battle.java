@@ -238,37 +238,48 @@ public class Battle {
         int livingPlayers = countLiving(playerParty);
         int livingEnemies = countLiving(enemyParty);
 
-        // keep your anti-stall logic
-        if (livingPlayers == 1 && livingEnemies == 1) {
-            return Action.ATTACK;
-        }
-
+        // prevent battle stall
         if (noProgressTurns >= 6) {
             return Action.ATTACK;
         }
 
-        double hpRatio = (double) enemy.getHp() / enemy.getMaxHp();
+        // In pure 1v1, enemies should never defend.
+        if (livingPlayers == 1 && livingEnemies == 1) {
+            return Action.ATTACK;
+        }
 
+        double hpRatio = (double) enemy.getHp() / enemy.getMaxHp();
         int roll = rand.nextInt(100);
 
-        // low HP → more defensive
-        if (hpRatio < 0.4) {
-            if (roll < 40) return Action.DEFEND;
-            if (roll < 55) return Action.WAIT;
+        // If enemies outnumber the player defend should be rare.
+        if (livingEnemies > livingPlayers) {
+            if (hpRatio < 0.30) {
+                if (roll < 15) return Action.DEFEND;
+                if (roll < 20) return Action.WAIT;
+                return Action.ATTACK;
+            } else {
+                if (roll < 5) return Action.DEFEND;
+                if (roll < 10) return Action.WAIT;
+                return Action.ATTACK;
+            }
+        }
+
+        // Even or disadvantaged enemy side
+        if (hpRatio < 0.30) {
+            if (roll < 25) return Action.DEFEND;
+            if (roll < 35) return Action.WAIT;
             return Action.ATTACK;
         }
 
-        // mid HP
-        if (hpRatio < 0.7) {
-            if (roll < 20) return Action.DEFEND;
-            if (roll < 30) return Action.WAIT;
+        if (hpRatio < 0.60) {
+            if (roll < 10) return Action.DEFEND;
+            if (roll < 15) return Action.WAIT;
             return Action.ATTACK;
         }
 
-        // high HP → mostly attack
-        if (roll < 10) return Action.DEFEND;
-        if (roll < 15) return Action.WAIT;
-
+        // High HP -> mostly attack
+        if (roll < 5) return Action.DEFEND;
+        if (roll < 10) return Action.WAIT;
         return Action.ATTACK;
     }
 
@@ -282,21 +293,6 @@ public class Battle {
         for (Unit u : opposing) {
             if (!u.isAlive()) continue;
             if (best == null || u.getHp() < best.getHp()) {
-                best = u;
-            }
-        }
-        return best;
-    }
-
-    private Unit strongestLiving(List<Unit> units) {
-        Unit best = null;
-        for (Unit u : units) {
-            if (!u.isAlive()) continue;
-            if (best == null) {
-                best = u;
-            } else if (u.getLevel() > best.getLevel()) {
-                best = u;
-            } else if (u.getLevel() == best.getLevel() && u.getAttack() > best.getAttack()) {
                 best = u;
             }
         }
