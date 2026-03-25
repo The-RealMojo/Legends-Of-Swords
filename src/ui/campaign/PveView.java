@@ -368,16 +368,29 @@ public class PveView extends JFrame {
             );
 
             if (replace != null) {
-                dao.deleteParty(userId, replace);
-                dao.saveCampaignProgress(
-                        userId,
-                        "Party_" + System.currentTimeMillis(),
-                        campaign.getCurrentRoom(),
-                        campaign.getParty().getGold(),
-                        new java.util.ArrayList<>(campaign.getParty().getHeroes()),
-                        campaign.getParty().getInventory()
-                );
-                JOptionPane.showMessageDialog(this, "Party saved (replaced " + replace + ").");
+                String originalPartyName = campaign.getPartyName();
+                String finalName = JOptionPane.showInputDialog(this, "New party name:");
+
+                if (finalName != null && !finalName.isBlank()) {
+                    dao.deleteParty(userId, replace);
+
+                    dao.saveCampaignProgress(
+                            userId,
+                            finalName,
+                            campaign.getCurrentRoom(),
+                            campaign.getParty().getGold(),
+                            new java.util.ArrayList<>(campaign.getParty().getHeroes()),
+                            campaign.getParty().getInventory()
+                    );
+
+                    if (originalPartyName != null
+                            && !originalPartyName.isBlank()
+                            && !originalPartyName.equals(finalName)) {
+                        dao.deleteParty(userId, originalPartyName);
+                    }
+
+                    JOptionPane.showMessageDialog(this, "Party saved (replaced " + replace + ").");
+                }
             }
         } else {
             int choice = JOptionPane.showConfirmDialog(
@@ -390,6 +403,8 @@ public class PveView extends JFrame {
             if (choice == JOptionPane.YES_OPTION) {
                 String name = JOptionPane.showInputDialog(this, "Party name:");
                 if (name != null && !name.isBlank()) {
+                    String originalPartyName = campaign.getPartyName();
+
                     dao.saveCampaignProgress(
                             userId,
                             name,
@@ -398,6 +413,13 @@ public class PveView extends JFrame {
                             new java.util.ArrayList<>(campaign.getParty().getHeroes()),
                             campaign.getParty().getInventory()
                     );
+
+                    if (originalPartyName != null
+                            && !originalPartyName.isBlank()
+                            && !originalPartyName.equals(name)) {
+                        dao.deleteParty(userId, originalPartyName);
+                    }
+
                     JOptionPane.showMessageDialog(this, "Party saved!");
                 }
             }

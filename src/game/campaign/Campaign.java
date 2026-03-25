@@ -61,6 +61,10 @@ public class Campaign {
         return header + result;
     }
 
+    public String getPartyName() {
+        return partyName;
+    }
+
     public int calculateScore() {
         int s = 0;
         for (Hero h : party.getHeroes()) {

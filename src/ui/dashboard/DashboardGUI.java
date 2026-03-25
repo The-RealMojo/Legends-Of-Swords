@@ -7,7 +7,7 @@ import game.pvp.PvpManager;
 import ui.dashboard.HallOfFameUI;
 import ui.campaign.PveView;
 import ui.login.UserProfile;
-
+import game.pvp.PvpController;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Arrays;
@@ -239,6 +239,16 @@ public class DashboardGUI extends JFrame {
         List<String> myParties = pvpManager.getSavedParties(currentUser.getUsername());
         List<String> opponentParties = pvpManager.getSavedParties(opponent);
 
+        if (myParties.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "You do not have any saved parties.");
+            return;
+        }
+
+        if (opponentParties.isEmpty()) {
+            JOptionPane.showMessageDialog(this, opponent + " does not have any saved parties.");
+            return;
+        }
+
         String myParty = (String) JOptionPane.showInputDialog(
                 this,
                 "Choose your party:",
@@ -268,35 +278,23 @@ public class DashboardGUI extends JFrame {
         invite.setReceiverParty(opponentParty);
 
         GameSaveDAO dao = new GameSaveDAO();
-        List<Hero> myHeroes       = dao.loadCampaignHeroes(currentUser.getUserId(), myParty);
-        List<Hero> opponentHeroes = dao.loadCampaignHeroes(dao.getUserIdByUsername(opponent), opponentParty);
+        PvpController pvpController = new PvpController(dao, pvpManager);
 
-        if (myHeroes.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Your selected party has no heroes.");
+        if (!pvpController.canStartBattle(
+                currentUser.getUsername(),
+                opponent,
+                myParty,
+                opponentParty
+        )) {
+            JOptionPane.showMessageDialog(this, "Unable to start PvP battle.");
             return;
         }
-        if (opponentHeroes.isEmpty()) {
-            JOptionPane.showMessageDialog(this, opponent + "'s selected party has no heroes.");
-            return;
-        }
 
-        // Cast to List<Unit> for BattleGUI
-        List<game.battle.Unit> p1Units = new java.util.ArrayList<>(myHeroes);
-        List<game.battle.Unit> p2Units = new java.util.ArrayList<>(opponentHeroes);
-
-        ui.battle.BattleGUI pvpBattle = new ui.battle.BattleGUI(
-                p1Units,
-                p2Units,
-                () -> {
-                    boolean p1Won = myHeroes.stream().anyMatch(game.battle.Unit::isAlive);
-                    pvpManager.recordMatchResult(
-                            p1Won ? currentUser.getUsername() : opponent,
-                            p1Won ? opponent : currentUser.getUsername()
-                    );
-                    JOptionPane.showMessageDialog(this, "PvP result recorded!");
-                }
+        pvpController.startBattle(
+                currentUser.getUsername(),
+                opponent,
+                myParty,
+                opponentParty
         );
-
-        pvpBattle.setVisible(true);
     }
 }

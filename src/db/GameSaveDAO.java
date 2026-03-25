@@ -15,7 +15,6 @@ public class GameSaveDAO {
     }
 
     // USER METHODS
-    /** Create user + hashed password. */
     public void createUser(String username, String password) {
         try (Connection c = getConnection();
              PreparedStatement s = c.prepareStatement(
@@ -28,7 +27,6 @@ public class GameSaveDAO {
         }
     }
 
-    /** Authentication by compare. */
     public boolean authenticate(String username, String password) {
         try (Connection c = getConnection();
              PreparedStatement s = c.prepareStatement(
@@ -58,7 +56,7 @@ public class GameSaveDAO {
         return -1;
     }
 
-    // CAMPAIGN SAVE
+    // CAMPAIGN SAVE - USE OF AI
     public void saveCampaignProgress(int userId, String partyName, int room, int gold, List<game.battle.Unit> units) {
         saveCampaignProgress(userId, partyName, room, gold, units, new LinkedHashMap<>());
     }

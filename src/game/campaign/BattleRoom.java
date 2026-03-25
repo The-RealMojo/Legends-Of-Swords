@@ -8,8 +8,6 @@ import javax.swing.*;
 import java.util.*;
 
 /**
- * execute() opens BattleGUI on the EDT via invokeLater, then blocks the
- * calling background thread via synchronized wait/notify until the battle ends.
  * Rewards (win):  +75g per enemy level, +50 EXP per enemy level split among survivors.
  * Penalty (loss): -10% gold.
  */
@@ -65,25 +63,25 @@ public class BattleRoom extends Room {
 
         int enemyCount;
         if (playerTotalLevel <= 2) {
-            enemyCount = (rand.nextInt(100) < 25) ? 2 : 1;
-        } else if (playerTotalLevel <= 4) {
-            enemyCount = rand.nextInt(2) + 1;          // 1-2
-        } else if (playerTotalLevel <= 8) {
-            enemyCount = rand.nextInt(3) + 1;          // 1-3
+            enemyCount = (rand.nextInt(100) < 30) ? 2 : 1;
+        } else if (playerTotalLevel <= 5) {
+            enemyCount = rand.nextInt(3) + 1;      // 1-3
+        } else if (playerTotalLevel <= 10) {
+            enemyCount = rand.nextInt(4) + 1;      // 1-4
         } else {
-            enemyCount = rand.nextInt(5) + 1;          // 1-5
+            enemyCount = rand.nextInt(5) + 1;      // 1-5
         }
 
         int minTotal;
         if (playerTotalLevel <= 5) {
-            minTotal = Math.max(1, playerTotalLevel - 2);
+            minTotal = Math.max(1, playerTotalLevel - 1);
         } else if (playerTotalLevel <= 15) {
-            minTotal = Math.max(1, playerTotalLevel - 4);
+            minTotal = Math.max(1, playerTotalLevel - 3);
         } else {
-            minTotal = Math.max(1, playerTotalLevel - 10);
+            minTotal = Math.max(1, playerTotalLevel - 8);
         }
 
-        int maxTotal = playerTotalLevel;
+        int maxTotal = playerTotalLevel + 1;
         int enemyTotalLevel = rand.nextInt(maxTotal - minTotal + 1) + minTotal;
 
         int[] levels = new int[enemyCount];
@@ -111,9 +109,9 @@ public class BattleRoom extends Room {
             nameCounts.put(base, num);
             String name = base + "_" + num;
 
-            int attack = 5 + lvl + rand.nextInt(2);
+            int attack = 6 + lvl;
             int defense = 2 + (lvl / 2);
-            int hp = 40 + lvl * 10;
+            int hp = 45 + lvl * 12;
 
             enemies.add(new Enemy(
                     name,

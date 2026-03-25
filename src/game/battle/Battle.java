@@ -243,7 +243,7 @@ public class Battle {
             return Action.ATTACK;
         }
 
-        // In pure 1v1, enemies should never defend.
+        // In a 1v1 enemies should never defend.
         if (livingPlayers == 1 && livingEnemies == 1) {
             return Action.ATTACK;
         }
