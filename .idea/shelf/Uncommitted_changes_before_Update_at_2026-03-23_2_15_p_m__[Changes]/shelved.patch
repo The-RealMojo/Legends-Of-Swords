@@ -1,0 +1,794 @@
+Index: src/ProfileCreationSystem/LoginScreen.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package Profile;\r\n\r\nimport pvp.PvpManager;\r\n\r\nimport javax.swing.*;\r\nimport java.awt.*;\r\nimport java.awt.event.ActionEvent;\r\nimport java.awt.event.ActionListener;\r\n\r\npublic class LoginScreen extends JFrame {\r\n\r\n    private JTextField usernameField;\r\n    private JPasswordField passwordField;\r\n    private JButton registerButton;\r\n    private JButton loginButton;\r\n\r\n    private AccountManager accountManager;\r\n\r\n    public LoginScreen(AccountManager accountManager) {\r\n        this.accountManager = accountManager;\r\n\r\n        setTitle(\"Profile Creation System\");\r\n        setSize(400, 220);\r\n        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);\r\n        setLocationRelativeTo(null);\r\n\r\n        JLabel usernameLabel = new JLabel(\"Username:\");\r\n        JLabel passwordLabel = new JLabel(\"Password:\");\r\n\r\n        usernameField = new JTextField(15);\r\n        passwordField = new JPasswordField(15);\r\n\r\n        registerButton = new JButton(\"Register\");\r\n        loginButton = new JButton(\"Login\");\r\n\r\n        JPanel panel = new JPanel();\r\n        panel.setLayout(new GridLayout(3, 2, 10, 10));\r\n\r\n        panel.add(usernameLabel);\r\n        panel.add(usernameField);\r\n        panel.add(passwordLabel);\r\n        panel.add(passwordField);\r\n        panel.add(registerButton);\r\n        panel.add(loginButton);\r\n\r\n        add(panel, BorderLayout.CENTER);\r\n\r\n        registerButton.addActionListener(new ActionListener() {\r\n            @Override\r\n            public void actionPerformed(ActionEvent e) {\r\n                String username = usernameField.getText();\r\n                String password = new String(passwordField.getPassword());\r\n\r\n                onRegisterSubmit(username, password);\r\n            }\r\n        });\r\n\r\n        loginButton.addActionListener(new ActionListener() {\r\n            @Override\r\n            public void actionPerformed(ActionEvent e) {\r\n                String username = usernameField.getText();\r\n                String password = new String(passwordField.getPassword());\r\n\r\n                onLoginSubmit(username, password);\r\n            }\r\n        });\r\n    }\r\n\r\n    public void onRegisterSubmit(String username, String password) {\r\n        if (username == null || username.trim().isEmpty()) {\r\n            showMessage(\"Username cannot be empty.\");\r\n            return;\r\n        }\r\n\r\n        if (password == null || password.trim().isEmpty()) {\r\n            showMessage(\"Password cannot be empty.\");\r\n            return;\r\n        }\r\n\r\n        boolean success = accountManager.register(username, password);\r\n\r\n        if (success) {\r\n            showMessage(\"Registration successful.\");\r\n            usernameField.setText(\"\");\r\n            passwordField.setText(\"\");\r\n        } else {\r\n            showMessage(\"Registration failed. Username may already exist.\");\r\n        }\r\n    }\r\n\r\n    public void onLoginSubmit(String username, String password) {\r\n        if (username == null || username.trim().isEmpty()) {\r\n            showMessage(\"Username cannot be empty.\");\r\n            return;\r\n        }\r\n\r\n        if (password == null || password.trim().isEmpty()) {\r\n            showMessage(\"Password cannot be empty.\");\r\n            return;\r\n        }\r\n\r\n        UserProfile user = accountManager.login(username, password);\r\n\r\n        if (user != null) {\r\n            showMessage(\"Login successful. Welcome, \" + user.getUsername() + \"!\");\r\n\r\n            PvpManager pvpManager = new PvpManager(accountManager.getUserDB());\r\n            DashboardGUI dashboard = new DashboardGUI(pvpManager);\r\n            dashboard.displaySavedData(user);\r\n            dashboard.setVisible(true);\r\n\r\n            dispose();\r\n        } else {\r\n            showMessage(\"Login failed. Invalid username or password.\");\r\n        }\r\n    }\r\n\r\n    public void showMessage(String message) {\r\n        JOptionPane.showMessageDialog(this, message);\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/ProfileCreationSystem/LoginScreen.java b/src/ProfileCreationSystem/LoginScreen.java
+--- a/src/ProfileCreationSystem/LoginScreen.java	(revision d11fc8040429dc362d3d96e75ddd3d407eab3d20)
++++ b/src/ProfileCreationSystem/LoginScreen.java	(date 1774215494835)
+@@ -1,5 +1,6 @@
+-package Profile;
++package ProfileCreationSystem;
+ 
++import profile.UserDB;
+ import pvp.PvpManager;
+ 
+ import javax.swing.*;
+@@ -104,8 +105,8 @@
+         if (user != null) {
+             showMessage("Login successful. Welcome, " + user.getUsername() + "!");
+ 
+-            PvpManager pvpManager = new PvpManager(accountManager.getUserDB());
+-            DashboardGUI dashboard = new DashboardGUI(pvpManager);
++            PvpManager pvpManager = new PvpManager((UserDB) accountManager.getUserDB());
++            Profile.DashboardGUI dashboard = new Profile.DashboardGUI(pvpManager);
+             dashboard.displaySavedData(user);
+             dashboard.setVisible(true);
+ 
+Index: src/ProfileCreationSystem/DashboardGUI.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/ProfileCreationSystem/DashboardGUI.java b/src/profile/DashboardGUI.java
+rename from src/ProfileCreationSystem/DashboardGUI.java
+rename to src/profile/DashboardGUI.java
+--- a/src/ProfileCreationSystem/DashboardGUI.java	(revision d11fc8040429dc362d3d96e75ddd3d407eab3d20)
++++ b/src/profile/DashboardGUI.java	(date 1774215262380)
+@@ -1,5 +1,6 @@
+ package Profile;
+ 
++import ProfileCreationSystem.UserProfile;
+ import pvp.Invite;
+ import pvp.PvpManager;
+ 
+Index: src/ProfileCreationSystem/SQLUserRepository.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package Profile;\r\n\r\nimport java.sql.Connection;\r\nimport java.sql.PreparedStatement;\r\nimport java.sql.ResultSet;\r\nimport java.sql.SQLException;\r\nimport java.util.ArrayList;\r\nimport java.util.List;\r\n\r\npublic class SQLUserRepository implements IUserDB {\r\n    private IDBConnection dbConnection;\r\n\r\n    public SQLUserRepository(IDBConnection dbConnection) {\r\n        this.dbConnection = dbConnection;\r\n    }\r\n\r\n    @Override\r\n    public boolean usernameExists(String username) {\r\n        boolean exists = false;\r\n\r\n        try {\r\n            Connection conn = dbConnection.getConnection();\r\n            String sql = \"SELECT * FROM Users WHERE username = ?\";\r\n            PreparedStatement stmt = conn.prepareStatement(sql);\r\n            stmt.setString(1, username);\r\n\r\n            ResultSet rs = stmt.executeQuery();\r\n\r\n            if (rs.next()) {\r\n                exists = true;\r\n            }\r\n\r\n            rs.close();\r\n            stmt.close();\r\n        } catch (SQLException e) {\r\n            e.printStackTrace();\r\n        }\r\n\r\n        return exists;\r\n    }\r\n\r\n    @Override\r\n    public void save(UserProfile user) {\r\n        try {\r\n            Connection conn = dbConnection.getConnection();\r\n            String sql = \"INSERT INTO Users (username, password) VALUES (?, ?)\";\r\n            PreparedStatement stmt = conn.prepareStatement(sql);\r\n\r\n            stmt.setString(1, user.getUsername());\r\n            stmt.setString(2, user.getPassword());\r\n\r\n            stmt.executeUpdate();\r\n            stmt.close();\r\n        } catch (SQLException e) {\r\n            e.printStackTrace();\r\n        }\r\n    }\r\n\r\n    @Override\r\n    public UserProfile findUsername(String username) {\r\n        UserProfile user = null;\r\n\r\n        try {\r\n            Connection conn = dbConnection.getConnection();\r\n            String sql = \"SELECT * FROM Users WHERE username = ?\";\r\n            PreparedStatement stmt = conn.prepareStatement(sql);\r\n            stmt.setString(1, username);\r\n\r\n            ResultSet rs = stmt.executeQuery();\r\n\r\n            if (rs.next()) {\r\n                int userId = rs.getInt(\"user_id\");\r\n\r\n                user = new UserProfile();\r\n                user.setUserId(String.valueOf(userId));\r\n                user.setUsername(rs.getString(\"username\"));\r\n                user.setPassword(rs.getString(\"password\"));\r\n                user.setScores(0);\r\n                user.setRankings(0);\r\n                user.setCampaignProgress(0);\r\n\r\n                loadSavedParties(user, userId);\r\n            }\r\n\r\n            rs.close();\r\n            stmt.close();\r\n        } catch (SQLException e) {\r\n            e.printStackTrace();\r\n        }\r\n\r\n        return user;\r\n    }\r\n\r\n    private void loadSavedParties(UserProfile user, int userId) {\r\n        try {\r\n            Connection conn = dbConnection.getConnection();\r\n            String sql = \"SELECT party_name FROM Parties WHERE user_id = ?\";\r\n            PreparedStatement stmt = conn.prepareStatement(sql);\r\n            stmt.setInt(1, userId);\r\n\r\n            ResultSet rs = stmt.executeQuery();\r\n\r\n            while (rs.next()) {\r\n                user.addSavedParty(rs.getString(\"party_name\"));\r\n            }\r\n\r\n            rs.close();\r\n            stmt.close();\r\n        } catch (SQLException e) {\r\n            e.printStackTrace();\r\n        }\r\n    }\r\n\r\n    @Override\r\n    public boolean hasSavedParty(String username) {\r\n        boolean hasParty = false;\r\n\r\n        try {\r\n            Connection conn = dbConnection.getConnection();\r\n            String sql = \"\"\"\r\n                    SELECT 1\r\n                    FROM Parties p\r\n                    JOIN Users u ON p.user_id = u.user_id\r\n                    WHERE u.username = ?\r\n                    LIMIT 1\r\n                    \"\"\";\r\n            PreparedStatement stmt = conn.prepareStatement(sql);\r\n            stmt.setString(1, username);\r\n\r\n            ResultSet rs = stmt.executeQuery();\r\n            hasParty = rs.next();\r\n\r\n            rs.close();\r\n            stmt.close();\r\n        } catch (SQLException e) {\r\n            e.printStackTrace();\r\n        }\r\n\r\n        return hasParty;\r\n    }\r\n\r\n    @Override\r\n    public List<String> getSavedParties(String username) {\r\n        List<String> parties = new ArrayList<>();\r\n\r\n        try {\r\n            Connection conn = dbConnection.getConnection();\r\n            String sql = \"\"\"\r\n                    SELECT p.party_name\r\n                    FROM Parties p\r\n                    JOIN Users u ON p.user_id = u.user_id\r\n                    WHERE u.username = ?\r\n                    ORDER BY p.party_name\r\n                    \"\"\";\r\n            PreparedStatement stmt = conn.prepareStatement(sql);\r\n            stmt.setString(1, username);\r\n\r\n            ResultSet rs = stmt.executeQuery();\r\n            while (rs.next()) {\r\n                parties.add(rs.getString(\"party_name\"));\r\n            }\r\n\r\n            rs.close();\r\n            stmt.close();\r\n        } catch (SQLException e) {\r\n            e.printStackTrace();\r\n        }\r\n\r\n        return parties;\r\n    }\r\n\r\n    @Override\r\n    public void recordPvpResult(String winnerUsername, String loserUsername) {\r\n        try {\r\n            Connection conn = dbConnection.getConnection();\r\n\r\n            String winSql = \"UPDATE Users SET pvp_wins = pvp_wins + 1 WHERE username = ?\";\r\n            PreparedStatement winStmt = conn.prepareStatement(winSql);\r\n            winStmt.setString(1, winnerUsername);\r\n            winStmt.executeUpdate();\r\n            winStmt.close();\r\n\r\n            String lossSql = \"UPDATE Users SET pvp_losses = pvp_losses + 1 WHERE username = ?\";\r\n            PreparedStatement lossStmt = conn.prepareStatement(lossSql);\r\n            lossStmt.setString(1, loserUsername);\r\n            lossStmt.executeUpdate();\r\n            lossStmt.close();\r\n\r\n        } catch (SQLException e) {\r\n            e.printStackTrace();\r\n        }\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/ProfileCreationSystem/SQLUserRepository.java b/src/ProfileCreationSystem/SQLUserRepository.java
+--- a/src/ProfileCreationSystem/SQLUserRepository.java	(revision d11fc8040429dc362d3d96e75ddd3d407eab3d20)
++++ b/src/ProfileCreationSystem/SQLUserRepository.java	(date 1774215691885)
+@@ -1,4 +1,4 @@
+-package Profile;
++package ProfileCreationSystem;
+ 
+ import java.sql.Connection;
+ import java.sql.PreparedStatement;
+@@ -6,15 +6,15 @@
+ import java.sql.SQLException;
+ import java.util.ArrayList;
+ import java.util.List;
++import database.DatabaseConnector;
+ 
+-public class SQLUserRepository implements IUserDB {
+-    private IDBConnection dbConnection;
++public class SQLUserRepository {
++    private DatabaseConnector dbConnection;
+ 
+-    public SQLUserRepository(IDBConnection dbConnection) {
++    public SQLUserRepository(DatabaseConnector dbConnection) {
+         this.dbConnection = dbConnection;
+     }
+ 
+-    @Override
+     public boolean usernameExists(String username) {
+         boolean exists = false;
+ 
+@@ -39,7 +39,6 @@
+         return exists;
+     }
+ 
+-    @Override
+     public void save(UserProfile user) {
+         try {
+             Connection conn = dbConnection.getConnection();
+@@ -56,7 +55,6 @@
+         }
+     }
+ 
+-    @Override
+     public UserProfile findUsername(String username) {
+         UserProfile user = null;
+ 
+@@ -111,7 +109,6 @@
+         }
+     }
+ 
+-    @Override
+     public boolean hasSavedParty(String username) {
+         boolean hasParty = false;
+ 
+@@ -139,7 +136,6 @@
+         return hasParty;
+     }
+ 
+-    @Override
+     public List<String> getSavedParties(String username) {
+         List<String> parties = new ArrayList<>();
+ 
+@@ -169,7 +165,6 @@
+         return parties;
+     }
+ 
+-    @Override
+     public void recordPvpResult(String winnerUsername, String loserUsername) {
+         try {
+             Connection conn = dbConnection.getConnection();
+Index: src/ProfileCreationSystem/AccountManager.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package Profile;\r\n\r\npublic class AccountManager {\r\n    private IUserDB userDB;\r\n\r\n    public AccountManager(IUserDB userDB) {\r\n        this.userDB = userDB;\r\n    }\r\n\r\n    public boolean register(String username, String password) {\r\n        if (username == null || username.trim().isEmpty()) {\r\n            return false;\r\n        }\r\n\r\n        if (password == null || password.trim().isEmpty()) {\r\n            return false;\r\n        }\r\n\r\n        username = username.trim();\r\n\r\n        if (userDB.usernameExists(username)) {\r\n            return false;\r\n        }\r\n\r\n        UserProfile newUser = new UserProfile();\r\n        newUser.setUsername(username);\r\n        newUser.setPassword(password);\r\n\r\n        userDB.save(newUser);\r\n        return true;\r\n    }\r\n\r\n    public UserProfile login(String username, String password) {\r\n        if (username == null || username.trim().isEmpty()) {\r\n            return null;\r\n        }\r\n\r\n        if (password == null || password.trim().isEmpty()) {\r\n            return null;\r\n        }\r\n\r\n        username = username.trim();\r\n\r\n        UserProfile user = userDB.findUsername(username);\r\n\r\n        if (user == null) {\r\n            return null;\r\n        }\r\n\r\n        if (user.getPassword().equals(password)) {\r\n            return user;\r\n        }\r\n\r\n        return null;\r\n    }\r\n\r\n    public IUserDB getUserDB() {\r\n        return userDB;\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/ProfileCreationSystem/AccountManager.java b/src/ProfileCreationSystem/AccountManager.java
+--- a/src/ProfileCreationSystem/AccountManager.java	(revision d11fc8040429dc362d3d96e75ddd3d407eab3d20)
++++ b/src/ProfileCreationSystem/AccountManager.java	(date 1774215430863)
+@@ -1,4 +1,4 @@
+-package Profile;
++package ProfileCreationSystem;
+ 
+ public class AccountManager {
+     private IUserDB userDB;
+Index: src/test/battle/BattleTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package test.battle;\r\nimport battle.*;\r\nimport org.junit.jupiter.api.BeforeEach;\r\nimport org.junit.jupiter.api.Test;\r\n\r\nimport java.util.ArrayList;\r\nimport java.util.Arrays;\r\nimport java.util.List;\r\n\r\nimport static org.junit.jupiter.api.Assertions.*;\r\n\r\nimport static org.junit.jupiter.api.Assertions.*;\r\n\r\npublic class BattleTest {\r\n\r\n    private Hero hero;\r\n    private Enemy enemy;\r\n\r\n    @BeforeEach\r\n    void setUp() {\r\n        hero = new Hero(\"Hero\", 5, 20, 10, 100, 30);\r\n        enemy = new Enemy(\"Enemy\", 3, 15, 5, 80, 20);\r\n    }\r\n\r\n    @Test\r\n    void testAttackDamageCalculation() {\r\n        enemy.takeDamage(hero.getAttack() - enemy.getDefense());\r\n        assertEquals(65, enemy.getHp()); // 80 - (20-5)\r\n    }\r\n\r\n    @Test\r\n    void testDamageCannotBeNegative() {\r\n        Hero weakHero = new Hero(\"Weak\", 1, 5, 10, 100, 30);\r\n        Enemy strongEnemy = new Enemy(\"Tank\", 1, 10, 50, 100, 20);\r\n\r\n        strongEnemy.takeDamage(weakHero.getAttack() - strongEnemy.getDefense());\r\n\r\n        assertEquals(100, strongEnemy.getHp());\r\n    }\r\n\r\n    @Test\r\n    void testHpNeverBelowZero() {\r\n        enemy.takeDamage(200);\r\n        assertEquals(0, enemy.getHp());\r\n        assertFalse(enemy.isAlive());\r\n    }\r\n\r\n    @Test\r\n    void testDefendRestoresHpAndMana() {\r\n        hero.takeDamage(30);\r\n        hero.restoreMana(-10); // just to simulate mana drop if needed\r\n\r\n        hero.restoreHp(10);\r\n        hero.restoreMana(5);\r\n\r\n        assertEquals(80, hero.getHp());\r\n        assertEquals(30, hero.getMana()); // capped at max\r\n    }\r\n\r\n    @Test\r\n    void testHpDoesNotExceedMax() {\r\n        hero.restoreHp(50);\r\n        assertEquals(100, hero.getHp());\r\n    }\r\n\r\n    @Test\r\n    void testTurnOrderByLevel() {\r\n        Hero highLevel = new Hero(\"High\", 10, 10, 5, 100, 20);\r\n        Hero lowLevel = new Hero(\"Low\", 1, 50, 5, 100, 20);\r\n\r\n        List<Unit> heroes = Arrays.asList(highLevel, lowLevel);\r\n        List<Unit> enemies = new ArrayList<>();\r\n\r\n        Battle battle = new Battle(heroes, enemies);\r\n        battle.startBattle();\r\n\r\n        assertTrue(highLevel.getHp() > 0);\r\n    }\r\n\r\n    @Test\r\n    void testStunSkipsOneTurn() {\r\n        hero.setStunned(true);\r\n\r\n        assertTrue(hero.isStunned());\r\n\r\n        hero.setStunned(false);\r\n\r\n        assertFalse(hero.isStunned());\r\n    }\r\n\r\n    @Test\r\n    void testBattleEndsWhenAllEnemiesDead() {\r\n        enemy.takeDamage(200);\r\n\r\n        List<Unit> heroes = Arrays.asList(hero);\r\n        List<Unit> enemies = Arrays.asList(enemy);\r\n\r\n        Battle battle = new Battle(heroes, enemies);\r\n\r\n        assertTrue(enemy.getHp() == 0);\r\n    }\r\n\r\n    @Test\r\n    void testTurnOrderSortedByLevelThenAttack() {\r\n        Hero h1 = new Hero(\"H1\", 1, 10, 5, 100, 50);\r\n        Hero h2 = new Hero(\"H2\", 3, 5, 5, 100, 50);\r\n        Enemy e1 = new Enemy(\"E1\", 2, 20, 5, 100, 50);\r\n\r\n        Battle battle = new Battle(\r\n                List.of(h1, h2),\r\n                List.of(e1)\r\n        );\r\n\r\n        var order = battle.getTurnOrder();\r\n\r\n        assertEquals(\"H2\", order.get(0).getName()); // level 3\r\n        assertEquals(\"E1\", order.get(1).getName()); // level 2\r\n        assertEquals(\"H1\", order.get(2).getName()); // level 1\r\n    }\r\n\r\n    @Test\r\n    void testAttackReducesHpCorrectly() {\r\n        Hero hero = new Hero(\"Hero\", 1, 20, 5, 100, 50);\r\n        Enemy enemy = new Enemy(\"Enemy\", 1, 5, 5, 100, 50);\r\n\r\n        Battle battle = new Battle(\r\n                List.of(hero),\r\n                List.of(enemy)\r\n        );\r\n\r\n        battle.executeAction(Action.ATTACK);\r\n\r\n        // Damage = 20 - 5 = 15\r\n        assertEquals(85, enemy.getHp());\r\n    }\r\n\r\n    @Test\r\n    void testAttackCannotDealNegativeDamage() {\r\n        Hero hero = new Hero(\"Hero\", 1, 5, 5, 100, 50);\r\n        Enemy enemy = new Enemy(\"Enemy\", 1, 50, 50, 100, 50);\r\n\r\n        Battle battle = new Battle(\r\n                List.of(hero),\r\n                List.of(enemy)\r\n        );\r\n\r\n        battle.executeAction(Action.ATTACK);\r\n\r\n        assertEquals(100, enemy.getHp());\r\n    }\r\n\r\n    @Test\r\n    void testDeadUnitIsNotTargeted() {\r\n        Hero hero = new Hero(\"Hero\", 1, 200, 0, 100, 50);\r\n        Enemy enemy = new Enemy(\"Enemy\", 1, 5, 0, 100, 50);\r\n\r\n        Battle battle = new Battle(\r\n                List.of(hero),\r\n                List.of(enemy)\r\n        );\r\n\r\n        battle.executeAction(Action.ATTACK);\r\n\r\n        assertEquals(0, enemy.getHp());\r\n        assertTrue(battle.isBattleOver());\r\n    }\r\n\r\n    @Test\r\n    void testHeroesWin() {\r\n        Hero hero = new Hero(\"Hero\", 1, 200, 0, 100, 50);\r\n        Enemy enemy = new Enemy(\"Enemy\", 1, 5, 0, 100, 50);\r\n\r\n        Battle battle = new Battle(\r\n                List.of(hero),\r\n                List.of(enemy)\r\n        );\r\n\r\n        battle.executeAction(Action.ATTACK);\r\n\r\n        assertEquals(\"Heroes\", battle.getWinner());\r\n    }\r\n\r\n    @Test\r\n    void testDefendRestoresStats() {\r\n        Hero hero = new Hero(\"Hero\", 1, 10, 5, 100, 50);\r\n        hero.takeDamage(20);\r\n\r\n        Battle battle = new Battle(\r\n                List.of(hero),\r\n                List.of(new Enemy(\"Enemy\", 1, 5, 5, 100, 50))\r\n        );\r\n\r\n        battle.executeAction(Action.DEFEND);\r\n\r\n        assertEquals(90, hero.getHp()); // 80 + 10\r\n        assertEquals(50, hero.getMana()); // capped\r\n    }\r\n\r\n    @Test\r\n    void testWaitAction() {\r\n        Hero hero = new Hero(\"Hero\", 1, 10, 5, 100, 50);\r\n        Enemy enemy = new Enemy(\"Enemy\", 1, 10, 5, 100, 50);\r\n\r\n        Battle battle = new Battle(\r\n                List.of(hero),\r\n                List.of(enemy)\r\n        );\r\n\r\n        Unit first = battle.getCurrentUnit();\r\n        battle.executeAction(Action.WAIT);\r\n        Unit second = battle.getCurrentUnit();\r\n\r\n        assertNotEquals(first, second);\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/test/battle/BattleTest.java b/src/test/battle/BattleTest.java
+--- a/src/test/battle/BattleTest.java	(revision d11fc8040429dc362d3d96e75ddd3d407eab3d20)
++++ b/src/test/battle/BattleTest.java	(date 1774215591970)
+@@ -1,34 +1,72 @@
+ package test.battle;
++
+ import battle.*;
+-import org.junit.jupiter.api.BeforeEach;
+-import org.junit.jupiter.api.Test;
+ 
+ import java.util.ArrayList;
+ import java.util.Arrays;
+ import java.util.List;
+ 
+-import static org.junit.jupiter.api.Assertions.*;
+-
+-import static org.junit.jupiter.api.Assertions.*;
+-
+ public class BattleTest {
+ 
+     private Hero hero;
+     private Enemy enemy;
+ 
+-    @BeforeEach
++    public static void main(String[] args) {
++        BattleTest t = new BattleTest();
++        t.runAll();
++        System.out.println("BattleTest passed.");
++    }
++
++    private void runAll() {
++        Runnable[] tests = {
++            this::testAttackDamageCalculation,
++            this::testDamageCannotBeNegative,
++            this::testHpNeverBelowZero,
++            this::testDefendRestoresHpAndMana,
++            this::testHpDoesNotExceedMax,
++            this::testTurnOrderByLevel,
++            this::testStunSkipsOneTurn,
++            this::testBattleEndsWhenAllEnemiesDead,
++            this::testTurnOrderSortedByLevelThenAttack,
++            this::testAttackReducesHpCorrectly,
++            this::testAttackCannotDealNegativeDamage,
++            this::testDeadUnitIsNotTargeted,
++            this::testHeroesWin,
++            this::testDefendRestoresStats,
++            this::testWaitAction
++        };
++        for (Runnable test : tests) {
++            setUp();
++            test.run();
++        }
++    }
++
++    private void assertEquals(int expected, int actual) {
++        if (expected != actual) throw new RuntimeException("Expected " + expected + " got " + actual);
++    }
++    private void assertEquals(String expected, String actual) {
++        if (!expected.equals(actual)) throw new RuntimeException("Expected " + expected + " got " + actual);
++    }
++    private void assertNotEquals(Object expected, Object actual) {
++        if (expected.equals(actual)) throw new RuntimeException("Expected not equals");
++    }
++    private void assertTrue(boolean val) {
++        if (!val) throw new RuntimeException("Expected true");
++    }
++    private void assertFalse(boolean val) {
++        if (val) throw new RuntimeException("Expected false");
++    }
++
+     void setUp() {
+         hero = new Hero("Hero", 5, 20, 10, 100, 30);
+         enemy = new Enemy("Enemy", 3, 15, 5, 80, 20);
+     }
+ 
+-    @Test
+     void testAttackDamageCalculation() {
+         enemy.takeDamage(hero.getAttack() - enemy.getDefense());
+         assertEquals(65, enemy.getHp()); // 80 - (20-5)
+     }
+ 
+-    @Test
+     void testDamageCannotBeNegative() {
+         Hero weakHero = new Hero("Weak", 1, 5, 10, 100, 30);
+         Enemy strongEnemy = new Enemy("Tank", 1, 10, 50, 100, 20);
+@@ -38,14 +76,12 @@
+         assertEquals(100, strongEnemy.getHp());
+     }
+ 
+-    @Test
+     void testHpNeverBelowZero() {
+         enemy.takeDamage(200);
+         assertEquals(0, enemy.getHp());
+         assertFalse(enemy.isAlive());
+     }
+ 
+-    @Test
+     void testDefendRestoresHpAndMana() {
+         hero.takeDamage(30);
+         hero.restoreMana(-10); // just to simulate mana drop if needed
+@@ -57,13 +93,11 @@
+         assertEquals(30, hero.getMana()); // capped at max
+     }
+ 
+-    @Test
+     void testHpDoesNotExceedMax() {
+         hero.restoreHp(50);
+         assertEquals(100, hero.getHp());
+     }
+ 
+-    @Test
+     void testTurnOrderByLevel() {
+         Hero highLevel = new Hero("High", 10, 10, 5, 100, 20);
+         Hero lowLevel = new Hero("Low", 1, 50, 5, 100, 20);
+@@ -77,7 +111,6 @@
+         assertTrue(highLevel.getHp() > 0);
+     }
+ 
+-    @Test
+     void testStunSkipsOneTurn() {
+         hero.setStunned(true);
+ 
+@@ -88,7 +121,6 @@
+         assertFalse(hero.isStunned());
+     }
+ 
+-    @Test
+     void testBattleEndsWhenAllEnemiesDead() {
+         enemy.takeDamage(200);
+ 
+@@ -100,7 +132,6 @@
+         assertTrue(enemy.getHp() == 0);
+     }
+ 
+-    @Test
+     void testTurnOrderSortedByLevelThenAttack() {
+         Hero h1 = new Hero("H1", 1, 10, 5, 100, 50);
+         Hero h2 = new Hero("H2", 3, 5, 5, 100, 50);
+@@ -118,7 +149,6 @@
+         assertEquals("H1", order.get(2).getName()); // level 1
+     }
+ 
+-    @Test
+     void testAttackReducesHpCorrectly() {
+         Hero hero = new Hero("Hero", 1, 20, 5, 100, 50);
+         Enemy enemy = new Enemy("Enemy", 1, 5, 5, 100, 50);
+@@ -134,7 +164,6 @@
+         assertEquals(85, enemy.getHp());
+     }
+ 
+-    @Test
+     void testAttackCannotDealNegativeDamage() {
+         Hero hero = new Hero("Hero", 1, 5, 5, 100, 50);
+         Enemy enemy = new Enemy("Enemy", 1, 50, 50, 100, 50);
+@@ -149,7 +178,6 @@
+         assertEquals(100, enemy.getHp());
+     }
+ 
+-    @Test
+     void testDeadUnitIsNotTargeted() {
+         Hero hero = new Hero("Hero", 1, 200, 0, 100, 50);
+         Enemy enemy = new Enemy("Enemy", 1, 5, 0, 100, 50);
+@@ -165,7 +193,6 @@
+         assertTrue(battle.isBattleOver());
+     }
+ 
+-    @Test
+     void testHeroesWin() {
+         Hero hero = new Hero("Hero", 1, 200, 0, 100, 50);
+         Enemy enemy = new Enemy("Enemy", 1, 5, 0, 100, 50);
+@@ -180,7 +207,6 @@
+         assertEquals("Heroes", battle.getWinner());
+     }
+ 
+-    @Test
+     void testDefendRestoresStats() {
+         Hero hero = new Hero("Hero", 1, 10, 5, 100, 50);
+         hero.takeDamage(20);
+@@ -196,7 +222,6 @@
+         assertEquals(50, hero.getMana()); // capped
+     }
+ 
+-    @Test
+     void testWaitAction() {
+         Hero hero = new Hero("Hero", 1, 10, 5, 100, 50);
+         Enemy enemy = new Enemy("Enemy", 1, 10, 5, 100, 50);
+Index: src/ProfileCreationSystem/UserProfile.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package ProfileCreationSystem;\r\n\r\nimport java.util.ArrayList;\r\nimport java.util.List;\r\n\r\npublic class UserProfile {\r\n\r\n    private String userId;\r\n    private String username;\r\n    private String password;\r\n    private int scores;\r\n    private int rankings;\r\n    private int campaignProgress;\r\n    private List<String> savedParties;\r\n\r\n    public UserProfile() {\r\n        savedParties = new ArrayList<>();\r\n    }\r\n\r\n    public UserProfile(String userId, String username, String password) {\r\n        this.userId = userId;\r\n        this.username = username;\r\n        this.password = password;\r\n        this.scores = 0;\r\n        this.rankings = 0;\r\n        this.campaignProgress = 0;\r\n        this.savedParties = new ArrayList<>();\r\n    }\r\n\r\n    public String getUserId() {\r\n        return userId;\r\n    }\r\n\r\n    public void setUserId(String userId) {\r\n        this.userId = userId;\r\n    }\r\n\r\n    public String getUsername() {\r\n        return username;\r\n    }\r\n\r\n    public void setUsername(String username) {\r\n        this.username = username;\r\n    }\r\n\r\n    public String getPassword() {\r\n        return password;\r\n    }\r\n\r\n    public void setPassword(String password) {\r\n        this.password = password;\r\n    }\r\n\r\n    public int getScores() {\r\n        return scores;\r\n    }\r\n\r\n    public void setScores(int scores) {\r\n        this.scores = scores;\r\n    }\r\n\r\n    public int getRankings() {\r\n        return rankings;\r\n    }\r\n\r\n    public void setRankings(int rankings) {\r\n        this.rankings = rankings;\r\n    }\r\n\r\n    public int getCampaignProgress() {\r\n        return campaignProgress;\r\n    }\r\n\r\n    public void setCampaignProgress(int campaignProgress) {\r\n        this.campaignProgress = campaignProgress;\r\n    }\r\n\r\n    public List<String> getSavedParties() {\r\n        return savedParties;\r\n    }\r\n\r\n    public void setSavedParties(List<String> savedParties) {\r\n        this.savedParties = savedParties;\r\n    }\r\n\r\n    public void addSavedParty(String partyName) {\r\n        savedParties.add(partyName);\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/ProfileCreationSystem/UserProfile.java b/src/ProfileCreationSystem/UserProfile.java
+--- a/src/ProfileCreationSystem/UserProfile.java	(revision d11fc8040429dc362d3d96e75ddd3d407eab3d20)
++++ b/src/ProfileCreationSystem/UserProfile.java	(date 1774215809295)
+@@ -1,89 +1,26 @@
+ package ProfileCreationSystem;
+ 
+-import java.util.ArrayList;
+-import java.util.List;
+-
+ public class UserProfile {
+-
+     private String userId;
+     private String username;
+     private String password;
+     private int scores;
+     private int rankings;
+     private int campaignProgress;
+-    private List<String> savedParties;
+-
+-    public UserProfile() {
+-        savedParties = new ArrayList<>();
+-    }
+-
+-    public UserProfile(String userId, String username, String password) {
+-        this.userId = userId;
+-        this.username = username;
+-        this.password = password;
+-        this.scores = 0;
+-        this.rankings = 0;
+-        this.campaignProgress = 0;
+-        this.savedParties = new ArrayList<>();
+-    }
+-
+-    public String getUserId() {
+-        return userId;
+-    }
+-
+-    public void setUserId(String userId) {
+-        this.userId = userId;
+-    }
+-
+-    public String getUsername() {
+-        return username;
+-    }
+-
+-    public void setUsername(String username) {
+-        this.username = username;
+-    }
+-
+-    public String getPassword() {
+-        return password;
+-    }
+-
+-    public void setPassword(String password) {
+-        this.password = password;
+-    }
+-
+-    public int getScores() {
+-        return scores;
+-    }
+-
+-    public void setScores(int scores) {
+-        this.scores = scores;
+-    }
+-
+-    public int getRankings() {
+-        return rankings;
+-    }
+-
+-    public void setRankings(int rankings) {
+-        this.rankings = rankings;
+-    }
+-
+-    public int getCampaignProgress() {
+-        return campaignProgress;
+-    }
+-
+-    public void setCampaignProgress(int campaignProgress) {
+-        this.campaignProgress = campaignProgress;
+-    }
+-
+-    public List<String> getSavedParties() {
+-        return savedParties;
+-    }
++    private java.util.List<String> savedParties = new java.util.ArrayList<>();
+ 
+-    public void setSavedParties(List<String> savedParties) {
+-        this.savedParties = savedParties;
+-    }
+-
+-    public void addSavedParty(String partyName) {
+-        savedParties.add(partyName);
+-    }
++    public String getUsername() { return username; }
++    public void setUsername(String username) { this.username = username; }
++    public String getPassword() { return password; }
++    public void setPassword(String password) { this.password = password; }
++    public void setUserId(String userId) { this.userId = userId; }
++    public String getUserId() { return userId; }
++    public void setScores(int scores) { this.scores = scores; }
++    public int getScores() { return scores; }
++    public void setRankings(int rankings) { this.rankings = rankings; }
++    public int getRankings() { return rankings; }
++    public void setCampaignProgress(int progress) { this.campaignProgress = progress; }
++    public int getCampaignProgress() { return campaignProgress; }
++    public void addSavedParty(String partyName) { savedParties.add(partyName); }
++    public java.util.List<String> getSavedParties() { return savedParties; }
+ }
+Index: src/test/battle/UnitTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package test.battle;\r\nimport battle.Hero;\r\nimport org.junit.jupiter.api.Test;\r\nimport static org.junit.jupiter.api.Assertions.*;\r\n\r\npublic class UnitTest {\r\n    @Test\r\n    void testTakeDamageReducesHp() {\r\n        Hero hero = new Hero(\"Hero\", 1, 10, 5, 100, 50);\r\n        hero.takeDamage(30);\r\n        assertEquals(70, hero.getHp());\r\n    }\r\n\r\n    @Test\r\n    void testTakeDamageCannotGoBelowZero() {\r\n        Hero hero = new Hero(\"Hero\", 1, 10, 5, 100, 50);\r\n        hero.takeDamage(200);\r\n        assertEquals(0, hero.getHp());\r\n        assertFalse(hero.isAlive());\r\n    }\r\n\r\n    @Test\r\n    void testTakeDamageNegativeDoesNothing() {\r\n        Hero hero = new Hero(\"Hero\", 1, 10, 5, 100, 50);\r\n        hero.takeDamage(-50);\r\n        assertEquals(100, hero.getHp());\r\n    }\r\n\r\n    @Test\r\n    void testRestoreHpCannotExceedMax() {\r\n        Hero hero = new Hero(\"Hero\", 1, 10, 5, 100, 50);\r\n        hero.takeDamage(20);\r\n        hero.restoreHp(50);\r\n        assertEquals(100, hero.getHp());\r\n    }\r\n\r\n    @Test\r\n    void testRestoreManaCannotExceedMax() {\r\n        Hero hero = new Hero(\"Hero\", 1, 10, 5, 100, 50);\r\n        hero.restoreMana(100);\r\n        assertEquals(50, hero.getMana());\r\n    }\r\n\r\n    @Test\r\n    void testStunnedFlagWorks() {\r\n        Hero hero = new Hero(\"Hero\", 1, 10, 5, 100, 50);\r\n        hero.setStunned(true);\r\n        assertTrue(hero.isStunned());\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/test/battle/UnitTest.java b/src/test/battle/UnitTest.java
+--- a/src/test/battle/UnitTest.java	(revision d11fc8040429dc362d3d96e75ddd3d407eab3d20)
++++ b/src/test/battle/UnitTest.java	(date 1774215589930)
+@@ -1,17 +1,36 @@
+ package test.battle;
++
+ import battle.Hero;
+-import org.junit.jupiter.api.Test;
+-import static org.junit.jupiter.api.Assertions.*;
+ 
+ public class UnitTest {
+-    @Test
++
++    public static void main(String[] args) {
++        UnitTest t = new UnitTest();
++        t.testTakeDamageReducesHp();
++        t.testTakeDamageCannotGoBelowZero();
++        t.testTakeDamageNegativeDoesNothing();
++        t.testRestoreHpCannotExceedMax();
++        t.testRestoreManaCannotExceedMax();
++        t.testStunnedFlagWorks();
++        System.out.println("UnitTest passed.");
++    }
++
++    private void assertEquals(int expected, int actual) {
++        if (expected != actual) throw new RuntimeException("Expected " + expected + " got " + actual);
++    }
++    private void assertTrue(boolean val) {
++        if (!val) throw new RuntimeException("Expected true");
++    }
++    private void assertFalse(boolean val) {
++        if (val) throw new RuntimeException("Expected false");
++    }
++
+     void testTakeDamageReducesHp() {
+         Hero hero = new Hero("Hero", 1, 10, 5, 100, 50);
+         hero.takeDamage(30);
+         assertEquals(70, hero.getHp());
+     }
+ 
+-    @Test
+     void testTakeDamageCannotGoBelowZero() {
+         Hero hero = new Hero("Hero", 1, 10, 5, 100, 50);
+         hero.takeDamage(200);
+@@ -19,14 +38,12 @@
+         assertFalse(hero.isAlive());
+     }
+ 
+-    @Test
+     void testTakeDamageNegativeDoesNothing() {
+         Hero hero = new Hero("Hero", 1, 10, 5, 100, 50);
+         hero.takeDamage(-50);
+         assertEquals(100, hero.getHp());
+     }
+ 
+-    @Test
+     void testRestoreHpCannotExceedMax() {
+         Hero hero = new Hero("Hero", 1, 10, 5, 100, 50);
+         hero.takeDamage(20);
+@@ -34,14 +51,12 @@
+         assertEquals(100, hero.getHp());
+     }
+ 
+-    @Test
+     void testRestoreManaCannotExceedMax() {
+         Hero hero = new Hero("Hero", 1, 10, 5, 100, 50);
+         hero.restoreMana(100);
+         assertEquals(50, hero.getMana());
+     }
+ 
+-    @Test
+     void testStunnedFlagWorks() {
+         Hero hero = new Hero("Hero", 1, 10, 5, 100, 50);
+         hero.setStunned(true);
+Index: src/ProfileCreationSystem/IUserDB.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package Profile;\r\n\r\nimport java.util.List;\r\n\r\npublic interface IUserDB {\r\n    boolean usernameExists(String username);\r\n    void save(UserProfile user);\r\n    UserProfile findUsername(String username);\r\n\r\n    boolean hasSavedParty(String username);\r\n    List<String> getSavedParties(String username);\r\n    void recordPvpResult(String winnerUsername, String loserUsername);\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/ProfileCreationSystem/IUserDB.java b/src/ProfileCreationSystem/IUserDB.java
+--- a/src/ProfileCreationSystem/IUserDB.java	(revision d11fc8040429dc362d3d96e75ddd3d407eab3d20)
++++ b/src/ProfileCreationSystem/IUserDB.java	(date 1774215400728)
+@@ -1,4 +1,6 @@
+-package Profile;
++package ProfileCreationSystem;
++
++import ProfileCreationSystem.UserProfile;
+ 
+ import java.util.List;
+ 
+Index: src/database/GameSaveDAO.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package database;\r\n\r\nimport battle.Unit;\r\nimport java.sql.Connection;\r\nimport java.sql.PreparedStatement;\r\nimport java.sql.ResultSet;\r\nimport java.sql.SQLException;\r\nimport java.sql.Statement;\r\nimport java.util.List;\r\n\r\npublic class GameSaveDAO {\r\n\r\n    //with the use of ai\r\n\r\n    private final DatabaseConnector db;\r\n\r\n    public GameSaveDAO() {\r\n        this.db = DatabaseConnector.getInstance();\r\n    }\r\n\r\n    // Saves the party state and campaign progress\r\n    public void saveCampaignProgress(int userId, String partyName, int currentRoom, int gold, List<Unit> heroes) {\r\n        String insertPartySql = \"INSERT INTO Parties (user_id, party_name, is_active_campaign, current_room, gold) VALUES (?, ?, true, ?, ?)\";\r\n        String insertHeroSql = \"INSERT INTO Heroes (party_id, hero_name, level, hp_current, hp_max, mana_current, mana_max, attack, defense) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)\";\r\n\r\n        try {\r\n            Connection conn = db.getConnection();\r\n            if (conn != null) {\r\n                // 1. Save the Party to get the generated party_id\r\n                PreparedStatement partyStmt = conn.prepareStatement(insertPartySql, Statement.RETURN_GENERATED_KEYS);\r\n                partyStmt.setInt(1, userId);\r\n                partyStmt.setString(2, partyName);\r\n                partyStmt.setInt(3, currentRoom);\r\n                partyStmt.setInt(4, gold);\r\n                partyStmt.executeUpdate();\r\n\r\n                ResultSet rs = partyStmt.getGeneratedKeys();\r\n                int partyId = -1;\r\n                if (rs.next()) {\r\n                    partyId = rs.getInt(1);\r\n                }\r\n\r\n                // 2. Save each Hero in the list to the Heroes table\r\n                if (partyId != -1) {\r\n                    PreparedStatement heroStmt = conn.prepareStatement(insertHeroSql);\r\n                    for (Unit hero : heroes) {\r\n                        heroStmt.setInt(1, partyId);\r\n                        heroStmt.setString(2, hero.getName());\r\n                        heroStmt.setInt(3, hero.getLevel());\r\n                        heroStmt.setInt(4, hero.getHp());\r\n                        heroStmt.setInt(5, hero.getMaxHp());\r\n                        heroStmt.setInt(6, hero.getMana());\r\n                        heroStmt.setInt(7, hero.getMaxMana());\r\n                        heroStmt.setInt(8, hero.getAttack());\r\n                        heroStmt.setInt(9, hero.getDefense());\r\n                        heroStmt.addBatch(); // Adds this hero to a batch for efficient saving\r\n                    }\r\n                    heroStmt.executeBatch(); // Executes the batch save\r\n                    System.out.println(\"Campaign and party successfully saved to the database.\");\r\n                }\r\n            }\r\n        } catch (SQLException e) {\r\n            System.out.println(\"Error saving campaign: \" + e.getMessage());\r\n            e.printStackTrace();\r\n        }\r\n    }\r\n\r\n    public record LoadedHeroRow(String name, int level, int attack, int defense, int hpMax, int manaMax, int hpCurrent, int manaCurrent) {}\r\n    public record LoadedCampaign(int currentRoom, int gold, int score, List<LoadedHeroRow> heroes, java.util.Map<String, Integer> inventory) {}\r\n    public record HighScoreRow(String username, int score, String achievedOn) {}\r\n\r\n    public LoadedCampaign loadCampaign(int userId, String partyName) {\r\n        // Dummy implementation for compilation\r\n        return null;\r\n    }\r\n\r\n    public void saveHighScore(int userId, int score) {\r\n        // Dummy implementation for compilation\r\n    }\r\n\r\n    public List<HighScoreRow> getTopHighScores(int limit) {\r\n        // Dummy implementation for compilation\r\n        return new java.util.ArrayList<>();\r\n    }\r\n\r\n    public void recordPvpResult(int winnerId, int loserId) {\r\n        // Dummy implementation for compilation\r\n    }\r\n\r\n    public void recordPvpResult(String winnerUsername, String loserUsername) {\r\n    }\r\n\r\n    public boolean usernameExists(String username) {\r\n        return true;\r\n    }\r\n\r\n    public boolean hasSavedParty(String username) {\r\n        return true;\r\n    }\r\n\r\n    public List<String> getSavedParties(String username) {\r\n        return new java.util.ArrayList<>();\r\n    }\r\n\r\n    public int createUser(String username, String password) throws Exception {\r\n        return 1;\r\n    }\r\n\r\n    public int authenticate(String username, String password) throws Exception {\r\n        return 1;\r\n    }\r\n\r\n    public Integer getUserIdByUsername(String username) {\r\n        return 1;\r\n    }\r\n\r\n    public void saveCampaignProgress(int userId, String partyName, int currentRoom, int gold, int score, List<Unit> heroes, java.util.Map<String, Integer> inventory) {\r\n        saveCampaignProgress(userId, partyName, currentRoom, gold, heroes);\r\n        // We will fully implement inventory and score saving if required later, but PveController calls this overload.\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/database/GameSaveDAO.java b/src/database/GameSaveDAO.java
+--- a/src/database/GameSaveDAO.java	(revision d11fc8040429dc362d3d96e75ddd3d407eab3d20)
++++ b/src/database/GameSaveDAO.java	(date 1774215237897)
+@@ -70,48 +70,195 @@
+     public record HighScoreRow(String username, int score, String achievedOn) {}
+ 
+     public LoadedCampaign loadCampaign(int userId, String partyName) {
+-        // Dummy implementation for compilation
++        String queryParty = "SELECT id, current_room, gold, score FROM Parties WHERE user_id = ? AND party_name = ? AND is_active_campaign = true ORDER BY id DESC LIMIT 1";
++        String queryHeroes = "SELECT hero_name, level, attack, defense, hp_max, mana_max, hp_current, mana_current FROM Heroes WHERE party_id = ?";
++        
++        try {
++            Connection conn = db.getConnection();
++            if (conn == null) return null;
++            
++            PreparedStatement partyStmt = conn.prepareStatement(queryParty);
++            partyStmt.setInt(1, userId);
++            partyStmt.setString(2, partyName);
++            ResultSet rsParty = partyStmt.executeQuery();
++            
++            if (rsParty.next()) {
++                int partyId = rsParty.getInt("id");
++                int currentRoom = rsParty.getInt("current_room");
++                int gold = rsParty.getInt("gold");
++                int score = 0; // fallback
++                try { score = rsParty.getInt("score"); } catch (Exception ignored) {}
++                
++                List<LoadedHeroRow> heroes = new java.util.ArrayList<>();
++                PreparedStatement heroStmt = conn.prepareStatement(queryHeroes);
++                heroStmt.setInt(1, partyId);
++                ResultSet rsHero = heroStmt.executeQuery();
++                
++                while (rsHero.next()) {
++                    heroes.add(new LoadedHeroRow(
++                        rsHero.getString("hero_name"), rsHero.getInt("level"), rsHero.getInt("attack"),
++                        rsHero.getInt("defense"), rsHero.getInt("hp_max"), rsHero.getInt("mana_max"),
++                        rsHero.getInt("hp_current"), rsHero.getInt("mana_current")
++                    ));
++                }
++                
++                return new LoadedCampaign(currentRoom, gold, score, heroes, new java.util.HashMap<>());
++            }
++        } catch (SQLException e) {
++            e.printStackTrace();
++        }
+         return null;
+     }
+ 
+     public void saveHighScore(int userId, int score) {
+-        // Dummy implementation for compilation
++        String sql = "INSERT INTO HighScores (user_id, score, achieved_on) VALUES (?, ?, CURRENT_TIMESTAMP)";
++        try {
++            Connection conn = db.getConnection();
++            if (conn != null) {
++                PreparedStatement stmt = conn.prepareStatement(sql);
++                stmt.setInt(1, userId);
++                stmt.setInt(2, score);
++                stmt.executeUpdate();
++            }
++        } catch (SQLException e) {
++            e.printStackTrace();
++        }
+     }
+ 
+     public List<HighScoreRow> getTopHighScores(int limit) {
+-        // Dummy implementation for compilation
+-        return new java.util.ArrayList<>();
++        List<HighScoreRow> results = new java.util.ArrayList<>();
++        String sql = "SELECT u.username, h.score, h.achieved_on FROM HighScores h JOIN Users u ON h.user_id = u.id ORDER BY h.score DESC LIMIT ?";
++        try {
++            Connection conn = db.getConnection();
++            if (conn != null) {
++                PreparedStatement stmt = conn.prepareStatement(sql);
++                stmt.setInt(1, limit);
++                ResultSet rs = stmt.executeQuery();
++                while (rs.next()) {
++                    results.add(new HighScoreRow(rs.getString("username"), rs.getInt("score"), rs.getString("achieved_on")));
++                }
++            }
++        } catch (SQLException e) {
++            e.printStackTrace();
++        }
++        return results;
+     }
+ 
+     public void recordPvpResult(int winnerId, int loserId) {
+-        // Dummy implementation for compilation
++        String sql = "INSERT INTO PvpMatches (winner_id, loser_id, match_date) VALUES (?, ?, CURRENT_TIMESTAMP)";
++        try {
++            Connection conn = db.getConnection();
++            if (conn != null) {
++                PreparedStatement stmt = conn.prepareStatement(sql);
++                stmt.setInt(1, winnerId);
++                stmt.setInt(2, loserId);
++                stmt.executeUpdate();
++            }
++        } catch (SQLException e) {
++            e.printStackTrace();
++        }
+     }
+ 
+     public void recordPvpResult(String winnerUsername, String loserUsername) {
++        Integer wId = getUserIdByUsername(winnerUsername);
++        Integer lId = getUserIdByUsername(loserUsername);
++        if (wId != null && lId != null) {
++            recordPvpResult(wId, lId);
++        }
+     }
+ 
+     public boolean usernameExists(String username) {
+-        return true;
++        return getUserIdByUsername(username) != null;
+     }
+ 
+     public boolean hasSavedParty(String username) {
+-        return true;
++        Integer uId = getUserIdByUsername(username);
++        if (uId == null) return false;
++        String sql = "SELECT 1 FROM Parties WHERE user_id = ? AND is_active_campaign = true LIMIT 1";
++        try {
++            Connection conn = db.getConnection();
++            if (conn != null) {
++                PreparedStatement stmt = conn.prepareStatement(sql);
++                stmt.setInt(1, uId);
++                return stmt.executeQuery().next();
++            }
++        } catch (SQLException e) {
++            e.printStackTrace();
++        }
++        return false;
+     }
+ 
+     public List<String> getSavedParties(String username) {
+-        return new java.util.ArrayList<>();
++        List<String> list = new java.util.ArrayList<>();
++        Integer uId = getUserIdByUsername(username);
++        if (uId == null) return list;
++        String sql = "SELECT party_name FROM Parties WHERE user_id = ? AND is_active_campaign = true";
++        try {
++            Connection conn = db.getConnection();
++            if (conn != null) {
++                PreparedStatement stmt = conn.prepareStatement(sql);
++                stmt.setInt(1, uId);
++                ResultSet rs = stmt.executeQuery();
++                while (rs.next()) {
++                    list.add(rs.getString("party_name"));
++                }
++            }
++        } catch (SQLException e) {
++            e.printStackTrace();
++        }
++        return list;
+     }
+ 
+     public int createUser(String username, String password) throws Exception {
+-        return 1;
++        if (usernameExists(username)) throw new Exception("User exists");
++        String sql = "INSERT INTO Users (username, password) VALUES (?, ?)";
++        try {
++            Connection conn = db.getConnection();
++            if (conn != null) {
++                PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
++                stmt.setString(1, username);
++                stmt.setString(2, password);
++                stmt.executeUpdate();
++                ResultSet rs = stmt.getGeneratedKeys();
++                if (rs.next()) return rs.getInt(1);
++            }
++        } catch (SQLException e) {
++            e.printStackTrace();
++        }
++        return -1;
+     }
+ 
+     public int authenticate(String username, String password) throws Exception {
+-        return 1;
++        String sql = "SELECT id FROM Users WHERE username = ? AND password = ?";
++        try {
++            Connection conn = db.getConnection();
++            if (conn != null) {
++                PreparedStatement stmt = conn.prepareStatement(sql);
++                stmt.setString(1, username);
++                stmt.setString(2, password);
++                ResultSet rs = stmt.executeQuery();
++                if (rs.next()) return rs.getInt("id");
++            }
++        } catch (SQLException e) {
++            e.printStackTrace();
++        }
++        throw new Exception("Invalid credentials");
+     }
+ 
+     public Integer getUserIdByUsername(String username) {
+-        return 1;
++        String sql = "SELECT id FROM Users WHERE username = ?";
++        try {
++            Connection conn = db.getConnection();
++            if (conn != null) {
++                PreparedStatement stmt = conn.prepareStatement(sql);
++                stmt.setString(1, username);
++                ResultSet rs = stmt.executeQuery();
++                if (rs.next()) return rs.getInt("id");
++            }
++        } catch (SQLException e) {
++            e.printStackTrace();
++        }
++        return null;
+     }
+ 
+     public void saveCampaignProgress(int userId, String partyName, int currentRoom, int gold, int score, List<Unit> heroes, java.util.Map<String, Integer> inventory) {
+Index: src/ProfileCreationSystem/ProfileCreationMain.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package ProfileCreationSystem;\r\n\r\npublic class ProfileCreationMain {\r\n\r\n    public static void main(String[] args) {\r\n\r\n        DatabaseConnector connector = DatabaseConnector.getInstance();\r\n        connector.openConnection();\r\n\r\n        IUserDB userDB = new SQLUserRepository(connector);\r\n        AccountManager accountManager = new AccountManager(userDB);\r\n\r\n        LoginScreen loginScreen = new LoginScreen(accountManager);\r\n        loginScreen.setVisible(true);\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/ProfileCreationSystem/ProfileCreationMain.java b/src/ProfileCreationSystem/ProfileCreationMain.java
+--- a/src/ProfileCreationSystem/ProfileCreationMain.java	(revision d11fc8040429dc362d3d96e75ddd3d407eab3d20)
++++ b/src/ProfileCreationSystem/ProfileCreationMain.java	(date 1774215705908)
+@@ -1,13 +1,19 @@
+ package ProfileCreationSystem;
+ 
++import database.DatabaseConnector;
++import database.GameSaveDAO;
++import profile.JdbcUserDB;
++import profile.AccountManager;
++import profile.LoginScreen;
++
+ public class ProfileCreationMain {
+ 
+     public static void main(String[] args) {
+ 
+         DatabaseConnector connector = DatabaseConnector.getInstance();
+-        connector.openConnection();
++        GameSaveDAO dao = new GameSaveDAO();
+ 
+-        IUserDB userDB = new SQLUserRepository(connector);
++        JdbcUserDB userDB = new JdbcUserDB(dao);
+         AccountManager accountManager = new AccountManager(userDB);
+ 
+         LoginScreen loginScreen = new LoginScreen(accountManager);
