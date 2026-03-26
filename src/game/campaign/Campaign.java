@@ -49,6 +49,12 @@ public class Campaign {
 
         if (room instanceof game.inn.InnRoom) {
             lastInnRoom = currentRoom;
+        } else if (room instanceof BattleRoom) {
+            boolean partyWiped = party.getHeroes().stream().noneMatch(Hero::isAlive);
+            if (partyWiped) {
+                currentRoom = lastInnRoom;
+                result += "\nParty retreated to last inn (Room " + lastInnRoom + ").";
+            }
         }
 
         if (currentRoom >= maxRooms) {
