@@ -55,6 +55,17 @@ CREATE TABLE IF NOT EXISTS PartyHeroes (
         REFERENCES Parties(user_id, party_name) ON DELETE CASCADE
 );
 
+-- Inventory stored within a saved party
+CREATE TABLE IF NOT EXISTS PartyInventory (
+    user_id      INT          NOT NULL,
+    party_name   VARCHAR(100) NOT NULL,
+    item_name    VARCHAR(50)  NOT NULL,
+    quantity     INT          NOT NULL DEFAULT 0,
+    PRIMARY KEY (user_id, party_name, item_name),
+    FOREIGN KEY (user_id, party_name)
+        REFERENCES Parties(user_id, party_name) ON DELETE CASCADE
+);
+
 -- Campaign end-of-run scores
 CREATE TABLE IF NOT EXISTS Scores (
     score_id   INT AUTO_INCREMENT PRIMARY KEY,
@@ -73,3 +84,4 @@ CREATE TABLE IF NOT EXISTS PvpMatches (
     FOREIGN KEY (winner_id) REFERENCES Users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (loser_id)  REFERENCES Users(user_id) ON DELETE CASCADE
 );
+

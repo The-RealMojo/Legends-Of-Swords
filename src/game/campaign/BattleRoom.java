@@ -8,8 +8,6 @@ import javax.swing.*;
 import java.util.*;
 
 /**
- * execute() opens BattleGUI on the EDT via invokeLater, then blocks the
- * calling background thread via synchronized wait/notify until the battle ends.
  * Rewards (win):  +75g per enemy level, +50 EXP per enemy level split among survivors.
  * Penalty (loss): -10% gold.
  */
@@ -61,33 +59,66 @@ public class BattleRoom extends Room {
         List<Unit> enemies = new ArrayList<>();
         Random rand = new Random();
 
-        int count = rand.nextInt(3) + 1;
+        int playerTotalLevel = Math.max(1, party.getTotalLevel());
 
-        int partySize = Math.max(1, party.getHeroes().size());
-        int partyAvg = Math.max(1, party.getTotalLevel() / partySize);
+        int enemyCount;
+        if (playerTotalLevel <= 2) {
+            enemyCount = (rand.nextInt(100) < 30) ? 2 : 1;
+        } else if (playerTotalLevel <= 5) {
+            enemyCount = rand.nextInt(3) + 1;      // 1-3
+        } else if (playerTotalLevel <= 10) {
+            enemyCount = rand.nextInt(4) + 1;      // 1-4
+        } else {
+            enemyCount = rand.nextInt(5) + 1;      // 1-5
+        }
 
-        String[] ENEMY_TYPES = {
-                "Goblin", "Ogre", "Skeleton", "Orc", "Bandit", "Slime"
-        };
+        int minTotal;
+        if (playerTotalLevel <= 5) {
+            minTotal = Math.max(1, playerTotalLevel - 1);
+        } else if (playerTotalLevel <= 15) {
+            minTotal = Math.max(1, playerTotalLevel - 3);
+        } else {
+            minTotal = Math.max(1, playerTotalLevel - 8);
+        }
 
-        java.util.Map<String, Integer> counts = new java.util.HashMap<>();
+        int maxTotal = playerTotalLevel + 1;
+        int enemyTotalLevel = rand.nextInt(maxTotal - minTotal + 1) + minTotal;
 
-        for (int i = 0; i < count; i++) {
-            int lvl = Math.max(1, partyAvg + rand.nextInt(3) - 1);
+        int[] levels = new int[enemyCount];
+        for (int i = 0; i < enemyCount; i++) {
+            levels[i] = 1;
+        }
 
-            String base = ENEMY_TYPES[rand.nextInt(ENEMY_TYPES.length)];
+        int remaining = Math.max(0, enemyTotalLevel - enemyCount);
+        while (remaining > 0) {
+            int idx = rand.nextInt(enemyCount);
+            if (levels[idx] < 10) {
+                levels[idx]++;
+                remaining--;
+            }
+        }
 
-            int num = counts.getOrDefault(base, 0) + 1;
-            counts.put(base, num);
+        String[] enemyTypes = {"Goblin", "Ogre", "Skeleton", "Orc", "Bandit", "Slime"};
+        Map<String, Integer> nameCounts = new HashMap<>();
 
+        for (int i = 0; i < enemyCount; i++) {
+            int lvl = levels[i];
+
+            String base = enemyTypes[rand.nextInt(enemyTypes.length)];
+            int num = nameCounts.getOrDefault(base, 0) + 1;
+            nameCounts.put(base, num);
             String name = base + "_" + num;
+
+            int attack = 6 + lvl;
+            int defense = 2 + (lvl / 2);
+            int hp = 45 + lvl * 12;
 
             enemies.add(new Enemy(
                     name,
                     lvl,
-                    5 + lvl,             // attack
-                    Math.max(1, lvl),    // defense
-                    70 + lvl * 15,       // hp
+                    attack,
+                    defense,
+                    hp,
                     0
             ));
         }

@@ -20,6 +20,8 @@ public class BattleGUI extends JFrame implements BattleObserver {
     private final List<Unit> playerParty;
     private final List<Unit> enemyParty;
     private final Runnable onBattleEnd;
+    private final String leftPanelTitle;
+    private final String rightPanelTitle;
 
     private JTextPane logArea;
     private StyledDocument logDoc;
@@ -28,9 +30,16 @@ public class BattleGUI extends JFrame implements BattleObserver {
     private JButton attackBtn, defendBtn, waitBtn, castBtn;
 
     public BattleGUI(List<Unit> playerParty, List<Unit> enemyParty, Runnable onBattleEnd) {
+        this(playerParty, enemyParty, onBattleEnd, "Your Party", "Enemies");
+    }
+
+    public BattleGUI(List<Unit> playerParty, List<Unit> enemyParty, Runnable onBattleEnd,
+                     String leftPanelTitle, String rightPanelTitle) {
         this.playerParty = playerParty;
         this.enemyParty = enemyParty;
         this.onBattleEnd = onBattleEnd;
+        this.leftPanelTitle = leftPanelTitle;
+        this.rightPanelTitle = rightPanelTitle;
 
         this.battle = new Battle(playerParty, enemyParty);
         this.battle.addObserver(this);
@@ -49,10 +58,10 @@ public class BattleGUI extends JFrame implements BattleObserver {
         setLayout(new BorderLayout(8, 8));
 
         heroPanel = new JPanel();
-        heroPanel.setBorder(BorderFactory.createTitledBorder("Your Party"));
+        heroPanel.setBorder(BorderFactory.createTitledBorder(leftPanelTitle));
 
         enemyPanel = new JPanel();
-        enemyPanel.setBorder(BorderFactory.createTitledBorder("Enemies"));
+        enemyPanel.setBorder(BorderFactory.createTitledBorder(rightPanelTitle));
 
         JPanel parties = new JPanel(new GridLayout(1, 2, 8, 0));
         parties.add(heroPanel);
@@ -292,16 +301,18 @@ public class BattleGUI extends JFrame implements BattleObserver {
             String text;
             if (showMana) {
                 text = String.format(
-                        "<html><b>%s</b><br/>HP: %d/%d<br/>Mana: %d/%d<br/>ATK: %d   DEF: %d</html>",
+                        "<html><b>%s</b><br/>Lv%d<br/>HP: %d/%d<br/>Mana: %d/%d<br/>ATK: %d   DEF: %d</html>",
                         nameText,
+                        u.getLevel(),
                         u.getHp(), u.getMaxHp(),
                         u.getMana(), u.getMaxMana(),
                         u.getAttack(), u.getDefense()
                 );
             } else {
                 text = String.format(
-                        "<html><b>%s</b><br/>HP: %d/%d<br/>ATK: %d   DEF: %d</html>",
+                        "<html><b>%s</b><br/>Lv%d<br/>HP: %d/%d<br/>ATK: %d   DEF: %d</html>",
                         nameText,
+                        u.getLevel(),
                         u.getHp(), u.getMaxHp(),
                         u.getAttack(), u.getDefense()
                 );
