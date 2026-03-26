@@ -8,8 +8,8 @@ import javax.swing.*;
 import java.util.*;
 
 /**
- * Rewards (win):  +75g per enemy level, +50 EXP per enemy level split among survivors.
- * Penalty (loss): -10% gold.
+ * (win):  +75g per enemy level, +50 EXP per enemy level split among survivors.
+ * (loss): -10% gold + -30% exp of current hero level.
  */
 public class BattleRoom extends Room {
     public BattleRoom(int floor) { super(floor); }
@@ -48,9 +48,18 @@ public class BattleRoom extends Room {
             }
             result.append("\nVictory! +").append(gold).append("g, +").append(exp).append(" EXP.\n");
         } else {
+            //-10% gold
             int penalty=(int)(party.getGold()*0.10);
             party.addGold(-penalty);
-            result.append("\nDefeated! Lost ").append(penalty).append("g.\n");
+
+            //-30% exp
+            List<Hero> survivors = new ArrayList<>();
+            for (Unit u : heroUnits) if (u.isAlive() && u instanceof Hero h) survivors.add(h);
+            for (Hero h : survivors) {
+                int expPenalty = (int)(h.getCurrentExp() * 0.30);
+                h.loseExp(expPenalty);
+            }
+            result.append("\nDefeated! Lost ").append(penalty).append("g and 30% of current level EXP.\n");
         }
         return result.toString();
     }
