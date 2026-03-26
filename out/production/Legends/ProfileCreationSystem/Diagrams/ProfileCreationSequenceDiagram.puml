@@ -1,0 +1,65 @@
+@startuml
+title Use Case 1 - Profile Creation and Login
+actor User
+
+participant ProfileCreationMain
+participant LoginScreen
+participant AccountManager
+participant SQLUserRepository
+participant DatabaseConnector
+database Database
+participant DashboardGUI
+
+== System Startup ==
+
+ProfileCreationMain -> DatabaseConnector : getInstance()
+ProfileCreationMain -> DatabaseConnector : openConnection()
+
+ProfileCreationMain -> LoginScreen : create LoginScreen
+LoginScreen -> User : display login/register screen
+
+== Registration Flow ==
+
+User -> LoginScreen : enter username/password\nclick Register
+LoginScreen -> AccountManager : register(username, password)
+
+AccountManager -> SQLUserRepository : usernameExists(username)
+SQLUserRepository -> DatabaseConnector : getConnection()
+DatabaseConnector -> Database : SELECT Users WHERE username=?
+
+Database --> SQLUserRepository : result
+
+alt username already exists
+    AccountManager -> LoginScreen : registration failed
+    LoginScreen -> User : show error message
+else username available
+    AccountManager -> SQLUserRepository : save(user)
+    SQLUserRepository -> DatabaseConnector : getConnection()
+    DatabaseConnector -> Database : INSERT new user
+    Database --> SQLUserRepository : success
+    AccountManager -> LoginScreen : registration success
+    LoginScreen -> User : show success message
+end
+
+== Login Flow ==
+
+User -> LoginScreen : enter username/password\nclick Login
+LoginScreen -> AccountManager : login(username,password)
+
+AccountManager -> SQLUserRepository : findUsername(username)
+SQLUserRepository -> DatabaseConnector : getConnection()
+DatabaseConnector -> Database : SELECT Users WHERE username=?
+
+Database --> SQLUserRepository : user data
+SQLUserRepository --> AccountManager : UserProfile
+
+alt password correct
+    AccountManager -> LoginScreen : return UserProfile
+    LoginScreen -> DashboardGUI : displaySavedData(user)
+    DashboardGUI -> User : show dashboard
+else password incorrect
+    AccountManager -> LoginScreen : login failed
+    LoginScreen -> User : show error message
+end
+
+@enduml

@@ -1,0 +1,205 @@
+Index: src/Pve/InnRoom.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package Pve;\r\n\r\nimport battle.Hero;\r\nimport java.util.*;\r\n\r\npublic class InnRoom extends Room {\r\n\r\n    public InnRoom(int floor) {\r\n        super(floor);\r\n    }\r\n\r\n    @Override\r\n    public void execute(Party party) {\r\n        System.out.println(\"Inn Room at floor \" + floor);\r\n\r\n        healAll(party);\r\n        shop(party);\r\n        recruitHero(party);\r\n    }\r\n\r\n    // ✅ Heal + revive\r\n    private void healAll(Party party) {\r\n        for (Hero h : party.getHeroes()) {\r\n            h.restoreHp(9999);\r\n            h.restoreMana(9999);\r\n        }\r\n        System.out.println(\"All heroes fully healed!\");\r\n    }\r\n\r\n    // ✅ Shop system (auto-buy for Deliverable 2)\r\n    private void shop(Party party) {\r\n        System.out.println(\"Visiting shop...\");\r\n\r\n        if (party.getGold() >= 200) {\r\n            party.addGold(-200);\r\n\r\n            for (Hero h : party.getHeroes()) {\r\n                h.restoreHp(20);\r\n            }\r\n\r\n            System.out.println(\"Bought Bread (+20 HP)\");\r\n        }\r\n        else if (party.getGold() >= 150) {\r\n            party.addGold(-150);\r\n\r\n            for (Hero h : party.getHeroes()) {\r\n                h.restoreMana(10);\r\n            }\r\n\r\n            System.out.println(\"Bought Water (+10 Mana)\");\r\n        }\r\n        else {\r\n            System.out.println(\"Not enough gold to buy items.\");\r\n        }\r\n    }\r\n\r\n    // ✅ Recruitment system\r\n    private void recruitHero(Party party) {\r\n        if (floor > 10) return;\r\n        if (party.getHeroes().size() >= 5) return;\r\n\r\n        Random rand = new Random();\r\n        int level = rand.nextInt(4) + 1;\r\n\r\n        int cost = (level == 1) ? 0 : level * 200;\r\n\r\n        System.out.println(\"Found hero (Level \" + level + \") Cost: \" + cost);\r\n\r\n        if (party.getGold() >= cost) {\r\n            party.addGold(-cost);\r\n\r\n            Hero newHero = new Hero(\r\n                    \"Recruit\" + level,\r\n                    level,\r\n                    level * 5,\r\n                    level * 3,\r\n                    level * 20,\r\n                    level * 10\r\n            );\r\n\r\n            party.getHeroes().add(newHero);\r\n\r\n            System.out.println(\"Hero recruited!\");\r\n        } else {\r\n            System.out.println(\"Not enough gold to recruit.\");\r\n        }\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/Pve/InnRoom.java b/src/Pve/InnRoom.java
+--- a/src/Pve/InnRoom.java	(revision 0799836dc373b88b88411c9532339f45b66ad404)
++++ b/src/Pve/InnRoom.java	(date 1774311033154)
+@@ -1,88 +1,123 @@
+-package Pve;
++package pve;
+ 
+ import battle.Hero;
+-import java.util.*;
++import inventory.Inventory;
++import inventory.ItemType;
+ 
++import java.util.List;
++import java.util.Scanner;
++
++/**
++ * PvE module: Inn room (placeholder, fully implemented with Inventory/Recruit in next step).
++ *
++ * <p>Implements: heal/revive, buy items, recruit heroes.</p>
++ */
+ public class InnRoom extends Room {
++    private final Inventory inventory;
++    private final Scanner scanner;
+ 
+-    public InnRoom(int floor) {
+-        super(floor);
++    public InnRoom(int roomNumber) {
++        this(roomNumber, null, null);
++    }
++
++    public InnRoom(int roomNumber, Inventory inventory, Scanner scanner) {
++        super(roomNumber);
++        this.inventory = inventory;
++        this.scanner = scanner;
+     }
+ 
+     @Override
+-    public void execute(Party party) {
+-        System.out.println("Inn Room at floor " + floor);
+-
+-        healAll(party);
+-        shop(party);
+-        recruitHero(party);
+-    }
+-
+-    // ✅ Heal + revive
+-    private void healAll(Party party) {
+-        for (Hero h : party.getHeroes()) {
+-            h.restoreHp(9999);
+-            h.restoreMana(9999);
++    public RoomResult enter(Party party) {
++        if (party == null) return new RoomResult(false, 0, 0, "No party.");
++        // If no interactive context is provided, default to a basic rest.
++        if (inventory == null || scanner == null) {
++            party.getHeroes().forEach(h -> {
++                h.restoreHp(9999);
++                h.restoreMana(9999);
++            });
++            return new RoomResult(true, -10, 20, "Rested at the Inn. (Cost: 10 gold)");
+         }
+-        System.out.println("All heroes fully healed!");
+-    }
+ 
+-    // ✅ Shop system (auto-buy for Deliverable 2)
+-    private void shop(Party party) {
+-        System.out.println("Visiting shop...");
++        int goldDelta = 0;
++        int scoreDelta = 0;
+ 
+-        if (party.getGold() >= 200) {
+-            party.addGold(-200);
++        while (true) {
++            System.out.println("\n=== Inn (Room " + getRoomNumber() + ") ===");
++            System.out.println("1) Heal/Revive all (10 gold)");
++            System.out.println("2) Shop (buy items)");
++            System.out.println("3) Recruit hero (50 gold)");
++            System.out.println("0) Leave inn");
++            System.out.print("> ");
++            String choice = scanner.nextLine().trim();
+ 
+-            for (Hero h : party.getHeroes()) {
+-                h.restoreHp(20);
+-            }
+-
+-            System.out.println("Bought Bread (+20 HP)");
+-        }
+-        else if (party.getGold() >= 150) {
+-            party.addGold(-150);
+-
+-            for (Hero h : party.getHeroes()) {
+-                h.restoreMana(10);
+-            }
+-
+-            System.out.println("Bought Water (+10 Mana)");
+-        }
+-        else {
+-            System.out.println("Not enough gold to buy items.");
++            switch (choice) {
++                case "1" -> {
++                    goldDelta -= 10;
++                    for (Hero h : party.getHeroes()) {
++                        // revive (if dead) + restore
++                        if (!h.isAlive()) {
++                            h.setHp(1);
++                        }
++                        h.restoreHp(9999);
++                        h.restoreMana(9999);
++                    }
++                    scoreDelta += 10;
++                    System.out.println("Everyone is restored.");
++                }
++                case "2" -> goldDelta += shop(); // shop returns negative cost
++                case "3" -> {
++                    if (party.getHeroes().size() >= Party.MAX_HEROES) {
++                        System.out.println("Party is full (max 5).");
++                        break;
++                    }
++                    goldDelta -= 50;
++                    Hero recruit = new Hero("Recruit-" + getRoomNumber(), 1, 10, 6, 100, 30);
++                    party.addHero(recruit);
++                    scoreDelta += 25;
++                    System.out.println("Recruited: " + recruit.getName());
++                }
++                case "0" -> {
++                    return new RoomResult(true, goldDelta, scoreDelta, "Left the Inn.");
++                }
++                default -> System.out.println("Unknown option.");
++            }
+         }
+     }
+ 
+-    // ✅ Recruitment system
+-    private void recruitHero(Party party) {
+-        if (floor > 10) return;
+-        if (party.getHeroes().size() >= 5) return;
++    /**
++     * @return negative gold delta (cost), or 0
++     */
++    private int shop() {
++        int goldDelta = 0;
++        while (true) {
++            System.out.println("\n--- Shop ---");
++            int i = 1;
++            for (ItemType t : ItemType.values()) {
++                System.out.println(i + ") " + t.name() + " (cost " + t.getCost() + ")");
++                i++;
++            }
++            System.out.println("0) Back");
++            System.out.print("> ");
++            String choice = scanner.nextLine().trim();
++            if ("0".equals(choice)) return goldDelta;
+ 
+-        Random rand = new Random();
+-        int level = rand.nextInt(4) + 1;
+-
+-        int cost = (level == 1) ? 0 : level * 200;
+-
+-        System.out.println("Found hero (Level " + level + ") Cost: " + cost);
+-
+-        if (party.getGold() >= cost) {
+-            party.addGold(-cost);
+-
+-            Hero newHero = new Hero(
+-                    "Recruit" + level,
+-                    level,
+-                    level * 5,
+-                    level * 3,
+-                    level * 20,
+-                    level * 10
+-            );
+-
+-            party.getHeroes().add(newHero);
+-
+-            System.out.println("Hero recruited!");
+-        } else {
+-            System.out.println("Not enough gold to recruit.");
++            int idx;
++            try {
++                idx = Integer.parseInt(choice);
++            } catch (NumberFormatException e) {
++                System.out.println("Invalid.");
++                continue;
++            }
++            List<ItemType> types = List.of(ItemType.values());
++            if (idx < 1 || idx > types.size()) {
++                System.out.println("Invalid.");
++                continue;
++            }
++            ItemType t = types.get(idx - 1);
++            inventory.add(t, 1);
++            goldDelta -= t.getCost();
++            System.out.println("Bought: " + t.name() + " (added to inventory)");
+         }
+     }
+-}
+\ No newline at end of file
++}
++
